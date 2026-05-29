@@ -1518,9 +1518,9 @@ function rFunnel(){
     const cr=_crd>0?_crn/_crd*100:0;
     const crc=cr>=50?"var(--green)":cr>=20?"var(--yellow)":"var(--red)";
 
+    const isPair = fi !== ti;
     const showCR = ti !== 6 && ti !== 7 && !isByte && !isPair;
     const namedLOs=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
-    const isPair = fi !== ti;
 
     // Build per-LO rows and accumulate totals
     let totalCount=0, totalFr=0, totalCrN=0, totalCrD=0;
