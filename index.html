@@ -422,7 +422,7 @@ const APP_STARTED_STAGES=new Set(["Application Started","Pre-Approval Review","P
 // SF stages excluded from contact rate denominator
 const DEAD_STAGES=new Set(["Dead Lead","Closed Loan"]);
 // Byte loan purposes to exclude
-const EXCLUDE_PURPOSES=new Set(["Other","Second - Purchase Money","Second - Refinance"]);
+const EXCLUDE_PURPOSES=new Set(["Other","Second - Purchase Money","Second - Refinance","Second"]);
 // Byte terminal statuses
 const TERMINAL_STATUSES=new Set(["Withdrawn","Withdrawn - Preapproval","Denied","Cancelled","Canceled",
   "Approved Not Accepted","Preapproval Not Accepted","Preapproval Request Denied",
@@ -1409,7 +1409,7 @@ function rFunnel(){
   const l2f_summary = isByte
     ? getL2F()
     : (f[5]>0 ? f[6]/f[5]*100 : 0);
-  const tridNote = "Excl. bridge & seconds · Co. rate ~46% due to bridge loans in denominator";
+  const tridNote = "Excl. bridge loans & second mortgages";
   if(isByte){
     document.getElementById("sstats").innerHTML=[
       {l:"APP COMPLETE → FUNDED",v:pc(f[6],f[3]),s:"Byte-led full conversion",c:"#a78bfa"},
