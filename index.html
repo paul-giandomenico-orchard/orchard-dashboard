@@ -23,6 +23,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 .filters{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fl{font-size:12px;color:var(--muted);letter-spacing:.1em;font-weight:600}
+.tip-wrap{position:relative;display:inline-block}
+.tip-wrap .tip-icon{color:var(--muted2);font-size:10px;cursor:help;margin-left:3px;vertical-align:middle}
+.tip-wrap .tip-box{display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1c2a3e;border:1px solid var(--border2);border-radius:6px;padding:8px 11px;font-size:11px;font-weight:400;color:var(--text);letter-spacing:0;line-height:1.6;width:240px;z-index:999;pointer-events:none;white-space:normal}
+.tip-wrap:hover .tip-box{display:block}
+.tip-wrap .tip-box::before{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:#1c2a3e}
 .pr{display:flex;gap:4px;flex-wrap:wrap}
 .pill{font-family:var(--font);font-size:12px;padding:5px 12px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap}
 .pill:hover{color:var(--text);border-color:var(--muted)}
@@ -208,15 +213,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 
 <div class="filters">
   <div class="fg">
-    <div class="fl" title="SF-Led: requires a Salesforce OM Opportunity — shows full Lead→Funded funnel with contact rates. Byte-Led: every Byte file regardless of SF link — App Complete→Funded only, higher coverage.">
-      DATA SOURCE <span style="color:var(--muted2);font-size:10px;cursor:help" title="SF-Led: requires a Salesforce OM Opportunity. Byte-Led: all Byte files regardless of SF link.">(?)</span>
+    <div class="fl">
+      DATA SOURCE <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">SF-Led: requires a Salesforce OM Opportunity — shows the full Lead→Funded funnel with contact rates.<br><br>Byte-Led: every Byte file regardless of SF link — App Complete→Funded only, higher coverage.</span></span>
     </div>
     <div class="pr" id="srcp"></div>
   </div>
   <div class="divider"></div>
   <div class="fg">
-    <div class="fl" title="Filters by the year the lead was created in Salesforce. Does not affect the Lock → Funded rate, which is sourced directly from Byte.">
-      COHORT YEAR <span style="color:var(--muted2);font-size:10px;cursor:help" title="Filters by the year the lead was created in Salesforce. Does not affect the Lock → Funded rate, which is sourced directly from Byte.">(?)</span>
+    <div class="fl">
+      COHORT YEAR <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">Filters by the year the lead was created in Salesforce.<br><br>Does not affect the Lock→Funded rate, which is sourced directly from Byte resolved loans.</span></span>
     </div>
     <div class="pr" id="yrp"></div>
   </div>
@@ -225,7 +230,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
   <div class="divider" id="src-divider"></div>
   <div class="fg" id="src-filter" style="flex:1"><div class="fl">LEAD TYPE</div><div class="pr" id="bktp"></div></div>
   <div class="divider"></div>
-  <div class="fg" id="cw-group"><div class="fl" title="Days since last logged Salesforce activity or Deal Notes entry. A lead is 'contacted' if touched within this window.">CONTACT WINDOW <span style="color:var(--muted2);font-size:10px;cursor:help" title="Days since last logged Salesforce activity or Deal Notes entry. A lead is 'contacted' if touched within this window.">(?)</span></div><div style="font-size:11px;color:var(--muted2);margin-bottom:3px">Last SF activity or Deal Note within</div><div class="pr" id="cwp"></div></div>
+  <div class="fg" id="cw-group"><div class="fl">CONTACT WINDOW <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">A lead is considered contacted if an outbound call attempt or inbound answered call was logged in Dialpad within this window.<br><br>Voicemail attempts count. Does not capture SMS, email, or outreach outside Dialpad.</span></span></div><div style="font-size:11px;color:var(--muted2);margin-bottom:3px">Dialpad outbound attempt or connect within</div><div class="pr" id="cwp"></div></div>
 </div>
 <div class="tabs">
   <button class="tab active" data-tab="funnel">FUNNEL</button>
@@ -235,10 +240,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 <div class="main">
   <div id="tab-funnel">
     <div id="seas-banner" style="display:none"></div>
+    <div class="sumgrid" id="sstats"></div>
     <div class="hint">CLICK A STAGE TO INSPECT · CLICK TWO STAGES FOR PAIR CONVERSION · CLICK AGAIN TO DESELECT</div>
     <div class="funnel-grid" id="fcards"></div>
     <div id="dpanel" style="display:none"></div>
-    <div class="sumgrid" id="sstats"></div>
     <div id="gap-note" style="display:none"></div>
   </div>
   <div id="tab-trend" style="display:none">
@@ -354,8 +359,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 const STAGES=[
   {key:0,label:"Lead",        sub:"OM Opportunity",      color:"#4a9eff",ct:null},
   {key:1,label:"App Started", sub:"Blend initiated",     color:"#a78bfa",ct:15},
-  {key:2,label:"App Complete",sub:"Byte file created",   color:"#34d399",ct:70},
-  {key:3,label:"TRID",        sub:"Address added",       color:"#f5c842",ct:35},
+  {key:2,label:"App Complete",sub:"Byte file created",   color:"#34d399",ct:80},
+  {key:3,label:"TRID",        sub:"Address added",       color:"#f5c842",ct:30},
   {key:4,label:"Lock",        sub:"Rate locked",         color:"#f97316",ct:90},
   {key:5,label:"Funded",      sub:"Loan closed",         color:"#f472b6",ct:75},
 ];
@@ -445,7 +450,7 @@ const DEFAULT_TARGETS={
 // STORAGE HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 // ── Cloudflare Worker storage ────────────────────────────────────────────────
-const WORKER_URL = "https://orchard-dashboard.paul-giandomenico.workers.dev/";
+const WORKER_URL = "https://orchard-dashboard.paul-giandomenico.workers.dev";
 
 async function storageSave(key, val, shared=false){
   if(!shared){ // personal settings stay in localStorage
@@ -1138,7 +1143,7 @@ async function saveSettings(){
 // UTILITY FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 function getL2F(){ return L2F_RATES[S.yr] ?? L2F_RATES['All'] ?? 0; }
-function getMonths(){ return (MONTHS_MAP[S.yr]||MONTHS_MAP['All']||{})[S.lo] || 16.4; }
+function getMonths(){ return Math.max(1, (MONTHS_MAP[S.yr]||MONTHS_MAP['All']||{})[S.lo] || 16.4); }
 function getMonthlyTarget(stageIdx){ const t=MONTHLY_TARGETS[stageIdx]; return t?(t[S.lo]||null):null; }
 function getMX(){
   if(S.src==="byte") return S.yr==="2025"?MX_BYTE_2025:S.yr==="2026"?MX_BYTE_2026:MX_BYTE_ALL;
@@ -1382,6 +1387,70 @@ function rFunnel(){
     : rawF;
   const sel=[...S.sel].sort((a,b)=>a-b);
 
+  // ── Render summary stats FIRST so they don't move when detail panel opens ──
+  const _sc30s=d.c30||[d.contact30];const _sc90s=d.c90||[d.contact90];
+  const _soc=d.open_counts||[d.open_total];
+  const cr30n=S.cw===30?(_sc30s[0]||0):(_sc90s[0]||0);
+  const cr30=_soc[0]>0?cr30n/_soc[0]*100:0;
+  const l2f = getL2F();
+  const tridNote = "Excl. bridge & seconds · Co. rate ~46% due to bridge loans in denominator";
+  if(isByte){
+    document.getElementById("sstats").innerHTML=[
+      {l:"APP COMPLETE → FUNDED",v:pc(f[5],f[2]),s:"Byte-led full conversion",c:"#a78bfa"},
+      {l:"TRID → LOCK",v:pc(f[4],f[3]),s:tridNote,c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
+      {l:"TOTAL APP COMPLETES",v:fmt(f[2]),s:"All Byte files (excl bridge/seconds)",c:"#34d399"},
+      {l:"LOCK → FUNDED",v:l2f.toFixed(1)+"%",s:"Byte resolved loans · target 75%",c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
+    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
+    // Gap note
+    const gapFunded  = GAP_SUMMARY["Funded - No SF Record"] || 0;
+    const gapActive  = GAP_SUMMARY["Active Pipeline - No SF Record"] || 0;
+    const gapStarted = GAP_SUMMARY["Started - No SF Record"] || 0;
+    const gapDupe    = GAP_SUMMARY["Orphaned Dupe"] || 0;
+    const gapOther   = GAP_SUMMARY["Withdrawn/Denied - No SF Record"] || 0;
+    const gapTotal   = gapFunded + gapActive + gapStarted + gapDupe + gapOther;
+    document.getElementById("gap-note").style.display="";
+    document.getElementById("gap-note").innerHTML=`
+      <div style="background:#0c1220;border:1px solid #f97316aa;border-radius:8px;padding:16px 18px;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:280px">
+            <div style="font-size:12px;font-weight:600;color:#fb923c;letter-spacing:.06em;margin-bottom:8px">
+              ⚠ BYTE ↔ SALESFORCE GAP — ${gapTotal} UNRECONCILED FILES
+            </div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.7">
+              Of ${fmt(f[2])} Byte files, ${gapTotal} have no matching SF opportunity by file number or borrower name.
+              Per system design every Byte file should have an SF opp — unmatched files represent a Salesforce data gap.
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+              ${[
+                {l:"Funded / Purchased",  v:gapFunded,  c:"#f87171"},
+                {l:"Active Pipeline",     v:gapActive,  c:"#fbbf24"},
+                {l:"Started (no TRID)",   v:gapStarted, c:"#94a3b8"},
+                {l:"Orphaned Dupe",       v:gapDupe,    c:"#6b7280"},
+                {l:"Withdrawn / Denied",  v:gapOther,   c:"#475569"},
+              ].map(x=>`<div style="font-size:11px"><span style="color:${x.c};font-weight:600">${x.v}</span> <span style="color:var(--muted2)">${x.l}</span></div>`).join("")}
+            </div>
+          </div>
+          <button onclick="exportGapCSV()"
+            style="font-family:var(--font);font-size:11px;padding:8px 14px;border-radius:4px;border:1px solid #f9731666;background:#f9731611;color:#fb923c;cursor:pointer;white-space:nowrap;flex-shrink:0"
+            onmouseover="this.style.background='#f9731622'" onmouseout="this.style.background='#f9731611'">
+            ↓ Export ${gapTotal} Records (CSV)
+          </button>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById("gap-note").style.display="none";
+    const crLabel = `CONTACT RATE (${S.cw}D)`;
+    const crVal   = cr30.toFixed(0)+"%";
+    const crSub   = `${fmt(d[S.cw===30?"contact30":"contact90"])} of ${fmt(d.open_total)} open leads`;
+    const crCol   = cr30>=20?"var(--green)":cr30>=10?"var(--yellow)":"var(--red)";
+    document.getElementById("sstats").innerHTML=[
+      {l:"LEAD → FUNDED",   v:pc(f[5],f[0]),        s:"Overall conversion",                    c:"#a78bfa"},
+      {l:"TRID → LOCK",     v:pc(f[4],f[3]),        s:tridNote,                                c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
+      {l:crLabel,           v:crVal,                 s:crSub,                                   c:crCol},
+      {l:"LOCK → FUNDED",   v:l2f.toFixed(1)+"%",   s:"Byte resolved loans · target 75%",      c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
+    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
+  }
+
   document.getElementById("fcards").innerHTML=STAGES.map((s,i)=>{
     const cnt = f[i];
     const isNA = cnt === null;
@@ -1454,9 +1523,12 @@ function rFunnel(){
     const cr=_crd>0?_crn/_crd*100:0;
     const crc=cr>=50?"var(--green)":cr>=20?"var(--yellow)":"var(--red)";
 
-    const showCR = ti !== 5;
+    const showCR = ti !== 5 && !isByte;
     const namedLOs=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
     const isPair = fi !== ti;
+
+    // Build per-LO rows and accumulate totals
+    let totalCount=0, totalFr=0, totalCrN=0, totalCrD=0;
     const loR=namedLOs.map(l=>{
       const ld=getMX()[l]?.[S.bkt]||getMX()[l]?.["All"]||getMX()["All"]["All"];
       const cnt=isByte?(ld.funnel[fi-2]||0):(ld.funnel[ti]);
@@ -1471,17 +1543,38 @@ function rFunnel(){
       const lcr=_lcrd>0?_lcrn/_lcrd*100:0;
       const isOther = l==="Other LO";
       const dimStyle = isOther&&S.lo!=="Other LO"?"opacity:.55":"";
+      const dispCnt = isByte?ld.funnel[ti-2]||0:ld.funnel[ti];
+      totalCount += dispCnt;
+      totalFr    += fr;
+      totalCrN   += _lcrn;
+      totalCrD   += _lcrd;
       const convCell = isPair ? '<td style="text-align:right"><span class="badge '+bcls(cv,fi===0?10:50)+'">'+cv.toFixed(1)+'%</span></td>' : '';
       const crCell   = showCR ? '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=50?"var(--green)":lcr>=20?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>' : '';
-      return '<tr style="'+dimStyle+'"><td><span class="ldot" style="background:'+LOC[l]+'"></span>'+LOSH[l]+'</td><td style="text-align:right">'+fmt(isByte?ld.funnel[ti-2]||0:ld.funnel[ti])+'</td>'+convCell+crCell+'</tr>';
+      return '<tr style="'+dimStyle+'"><td><span class="ldot" style="background:'+LOC[l]+'"></span>'+LOSH[l]+'</td><td style="text-align:right">'+fmt(dispCnt)+'</td>'+convCell+crCell+'</tr>';
     }).join("");
 
+    // Totals row
+    const totalCv  = totalFr>0 ? totalCount/totalFr*100 : 0;
+    const totalCr  = totalCrD>0 ? totalCrN/totalCrD*100 : 0;
+    const totalConvCell = isPair ? '<td style="text-align:right"><span class="badge '+bcls(totalCv,fi===0?10:50)+'">'+totalCv.toFixed(1)+'%</span></td>' : '';
+    const totalCrCell   = showCR ? '<td style="text-align:right;color:'+(totalCr>=50?"var(--green)":totalCr>=20?"var(--yellow)":"var(--red)")+'">'+totalCr.toFixed(0)+'%</td>' : '';
+    const totalsRow = '<tr style="border-top:1px solid var(--border2);font-weight:600"><td style="color:var(--muted)">TOTAL</td><td style="text-align:right">'+fmt(totalCount)+'</td>'+totalConvCell+totalCrCell+'</tr>';
+
+    // By-type bars with total
     const maxB=Math.max(1,...BUCKETS.filter(b=>b!=="All").map(b=>{const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];return bd?bd.funnel[ti]:0;}));
+    let bTotal=0, bFrTotal=0;
     const bBars=BUCKETS.filter(b=>b!=="All").map(b=>{
       const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];if(!bd)return"";
-      const v=bd.funnel[ti];const w=maxB>0?v/maxB*100:0;
-      return`<div class="bbr"><div class="bbl">${BSH[b]}</div><div class="bbt"><div class="bbf" style="width:${w}%;background:${BC[b]}"></div></div><div class="bbv">${fmt(v)}</div></div>`;
+      const v=bd.funnel[ti]; if(v===0) return"";
+      const bFr=bd.funnel[isByte?0:0]||bd.total||0;
+      bTotal+=v; bFrTotal+=bFr;
+      const w=maxB>0?v/maxB*100:0;
+      const bConv=bFr>0?v/bFr*100:0;
+      const convLabel=!isByte?`<span style="font-size:10px;color:var(--muted2);margin-left:4px">${bConv.toFixed(1)}%</span>`:'';
+      return`<div class="bbr"><div class="bbl">${BSH[b]}</div><div class="bbt"><div class="bbf" style="width:${w}%;background:${BC[b]}"></div></div><div class="bbv">${fmt(v)}${convLabel}</div></div>`;
     }).join("");
+    const bTotalConv = bFrTotal>0 ? bTotal/bFrTotal*100 : 0;
+    const bTotalRow = `<div style="border-top:1px solid var(--border2);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted)"><span>TOTAL</span><span>${fmt(bTotal)}${!isByte?`<span style="font-size:10px;color:var(--muted2);margin-left:6px">${bTotalConv.toFixed(1)}%</span>`:''}</span></div>`;
 
     let flagH="";
     if(!isByte&&S.bkt==="All"){
@@ -1498,73 +1591,10 @@ function rFunnel(){
       <div class="dcols" style="grid-template-columns:${showCR?'1fr 1.4fr':'1.4fr 1.4fr'}">
         <div class="dc"><div class="dcl">PER LO — ${ts.label.toUpperCase()}</div>
           <table class="lt"><thead><tr><th>LO</th><th style="text-align:right">COUNT</th>${isPair?'<th style="text-align:right">CONV%</th>':''}${showCR?'<th style="text-align:right">CR'+S.cw+'d</th>':''}</tr></thead>
-          <tbody>${loR}</tbody></table>
+          <tbody>${loR}${totalsRow}</tbody></table>
         </div>
-        <div class="dc"><div class="dcl">BY TYPE AT ${ts.label.toUpperCase()}</div>${bBars}</div>
+        <div class="dc"><div class="dcl">BY TYPE AT ${ts.label.toUpperCase()}</div>${bBars}${bTotalRow}</div>
       </div>${flagH}</div>`;
-  }
-
-  const _sc30s=d.c30||[d.contact30];const _sc90s=d.c90||[d.contact90];
-  const _soc=d.open_counts||[d.open_total];
-  const cr30n=S.cw===30?(_sc30s[0]||0):(_sc90s[0]||0);
-  const cr30=_soc[0]>0?cr30n/_soc[0]*100:0;
-  const l2f = getL2F();
-  const tridNote = "Excl. bridge & seconds · Co. rate ~46% due to bridge loans in denominator";
-  if(isByte){
-    document.getElementById("sstats").innerHTML=[
-      {l:"APP COMPLETE → FUNDED",v:pc(f[5],f[2]),s:"Byte-led full conversion",c:"#a78bfa"},
-      {l:"TRID → LOCK",v:pc(f[4],f[3]),s:tridNote,c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
-      {l:"TOTAL APP COMPLETES",v:fmt(f[2]),s:"All Byte files (excl bridge/seconds)",c:"#34d399"},
-      {l:"LOCK → FUNDED",v:l2f.toFixed(1)+"%",s:"Byte resolved loans · target 75%",c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
-    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
-    // Gap note
-    const gapFunded  = GAP_SUMMARY["Funded - No SF Record"] || 0;
-    const gapActive  = GAP_SUMMARY["Active Pipeline - No SF Record"] || 0;
-    const gapStarted = GAP_SUMMARY["Started - No SF Record"] || 0;
-    const gapDupe    = GAP_SUMMARY["Orphaned Dupe"] || 0;
-    const gapOther   = GAP_SUMMARY["Withdrawn/Denied - No SF Record"] || 0;
-    const gapTotal   = gapFunded + gapActive + gapStarted + gapDupe + gapOther;
-    document.getElementById("gap-note").style.display="";
-    document.getElementById("gap-note").innerHTML=`
-      <div style="background:#0c1220;border:1px solid #f97316aa;border-radius:8px;padding:16px 18px;margin-top:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
-          <div style="flex:1;min-width:280px">
-            <div style="font-size:12px;font-weight:600;color:#fb923c;letter-spacing:.06em;margin-bottom:8px">
-              ⚠ BYTE ↔ SALESFORCE GAP — ${gapTotal} UNRECONCILED FILES
-            </div>
-            <div style="font-size:11px;color:var(--muted);line-height:1.7">
-              Of ${fmt(f[2])} Byte files, ${gapTotal} have no matching SF opportunity by file number or borrower name.
-              Per system design every Byte file should have an SF opp — unmatched files represent a Salesforce data gap.
-            </div>
-            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
-              ${[
-                {l:"Funded / Purchased",  v:gapFunded,  c:"#f87171"},
-                {l:"Active Pipeline",     v:gapActive,  c:"#fbbf24"},
-                {l:"Started (no TRID)",   v:gapStarted, c:"#94a3b8"},
-                {l:"Orphaned Dupe",       v:gapDupe,    c:"#6b7280"},
-                {l:"Withdrawn / Denied",  v:gapOther,   c:"#475569"},
-              ].map(x=>`<div style="font-size:11px"><span style="color:${x.c};font-weight:600">${x.v}</span> <span style="color:var(--muted2)">${x.l}</span></div>`).join("")}
-            </div>
-          </div>
-          <button onclick="exportGapCSV()"
-            style="font-family:var(--font);font-size:11px;padding:8px 14px;border-radius:4px;border:1px solid #f9731666;background:#f9731611;color:#fb923c;cursor:pointer;white-space:nowrap;flex-shrink:0"
-            onmouseover="this.style.background='#f9731622'" onmouseout="this.style.background='#f9731611'">
-            ↓ Export ${gapTotal} Records (CSV)
-          </button>
-        </div>
-      </div>`;
-  } else {
-    document.getElementById("gap-note").style.display="none";
-    const crLabel = `CONTACT RATE (${S.cw}D)`;
-    const crVal   = cr30.toFixed(0)+"%";
-    const crSub   = `${fmt(d[S.cw===30?"contact30":"contact90"])} of ${fmt(d.open_total)} open leads`;
-    const crCol   = cr30>=20?"var(--green)":cr30>=10?"var(--yellow)":"var(--red)";
-    document.getElementById("sstats").innerHTML=[
-      {l:"LEAD → FUNDED",   v:pc(f[5],f[0]),        s:"Overall conversion",                    c:"#a78bfa"},
-      {l:"TRID → LOCK",     v:pc(f[4],f[3]),        s:tridNote,                                c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
-      {l:crLabel,           v:crVal,                 s:crSub,                                   c:crCol},
-      {l:"LOCK → FUNDED",   v:l2f.toFixed(1)+"%",   s:"Byte resolved loans · target 75%",      c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
-    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
   }
 }
 
