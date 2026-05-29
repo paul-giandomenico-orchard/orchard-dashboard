@@ -1466,8 +1466,8 @@ function rFunnel(){
 
     let mm="";
     const fromLabel = isByte && i===2 ? "" : null; // AppComplete is base in Byte mode
-    if(cP!==null && !(isByte && i===2) && !STAGES[i].adv)mm+=`<div class="mr"><span class="ml">FROM PREV</span><span class="badge ${bcls(cP,s.ct)}">${cP.toFixed(1)}%</span></div>`;
-    if((!isByte || i>2) && !STAGES[i].adv) mm+=`<div class="mr"><span class="ml">${isByte?"FROM APP CMP":"FROM LEAD"}</span><span class="mv" style="color:var(--text);opacity:.7">${cL.toFixed(1)}%</span></div>`;
+    if(cP!==null && !(isByte && i===2) && !STAGES[i].adv && i!==1)mm+=`<div class="mr"><span class="ml">FROM PREV</span><span class="badge ${bcls(cP,s.ct)}">${cP.toFixed(1)}%</span></div>`;
+    if((!isByte || i>2) && !STAGES[i].adv && i!==1) mm+=`<div class="mr"><span class="ml">${isByte?"FROM APP CMP":"FROM LEAD"}</span><span class="mv" style="color:var(--text);opacity:.7">${cL.toFixed(1)}%</span></div>`;
     // Map display index back to target key: 0->0(Lead), 2->1(AppStarted), 4->3(TRID)
     const _tgtMap={0:0,2:1,4:3};
     const monthlyTarget = _tgtMap[i]!==undefined?getMonthlyTarget(_tgtMap[i]):null;
