@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Orchard Mortgage — Lead Funnel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Libre+Baskerville:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090f;--bg2:#0d1117;--bg3:#131a24;
+  --border:#253548;--border2:#2e4560;
+  --text:#dde8f4;--muted:#7a9bbf;--muted2:#556e8a;
+  --paul:#4a9eff;--zac:#f5c842;--barbara:#c084fc;--annette:#34d399;--other:#6b7280;
+  --green:#22c55e;--yellow:#eab308;--red:#ef4444;
+  --font:'Inter',Arial,sans-serif;--display:'Libre Baskerville',Georgia,serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh}
+.header{background:linear-gradient(135deg,#0a0f1a,#0d1420,#0a1018);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:flex-end}
+.header-title{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:.5px;color:#f0f6ff;line-height:1}
+.header-sub{font-size:13px;color:var(--muted);letter-spacing:.1em;margin-top:3px}
+.header-meta{font-size:12px;color:var(--muted2);text-align:right;line-height:1.8}
+.filters{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:12px;color:var(--muted);letter-spacing:.1em;font-weight:600}
+.tip-wrap{position:relative;display:inline-block}
+.tip-wrap .tip-icon{color:var(--muted2);font-size:10px;cursor:help;margin-left:3px;vertical-align:middle}
+.tip-wrap .tip-box{display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1c2a3e;border:1px solid var(--border2);border-radius:6px;padding:8px 11px;font-size:11px;font-weight:400;color:var(--text);letter-spacing:0;line-height:1.6;width:240px;z-index:999;pointer-events:none;white-space:normal}
+.tip-wrap:hover .tip-box{display:block}
+.tip-wrap .tip-box::before{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:#1c2a3e}
+.pr{display:flex;gap:4px;flex-wrap:wrap}
+.pill{font-family:var(--font);font-size:12px;padding:5px 12px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap}
+.pill:hover{color:var(--text);border-color:var(--muted)}
+.divider{width:1px;height:32px;background:var(--border);flex-shrink:0}
+.tabs{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;display:flex}
+.tab{font-family:var(--font);font-size:12px;letter-spacing:.08em;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:11px 18px 9px;cursor:pointer;transition:all .12s}
+.tab.active{color:var(--paul);border-bottom-color:var(--paul)}
+.main{padding:16px 20px;max-width:1200px}
+.hint{font-size:12px;color:var(--muted2);letter-spacing:.06em;margin-bottom:12px}
+.funnel-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:4px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px 12px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.sc:hover{transform:translateY(-1px);border-color:var(--border2)}
+.fill-bar{position:absolute;bottom:0;left:0;height:2px;opacity:.5}
+.ctag{position:absolute;top:6px;right:7px;font-size:10px;letter-spacing:.08em;opacity:.9}
+.sname{font-size:12px;letter-spacing:.08em;margin-bottom:4px;font-weight:600}
+.sdef{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
+.scount{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:0;line-height:1;color:#f0f6ff}
+.smets{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.mr{display:flex;justify-content:space-between;align-items:center}
+.ml{font-size:11px;color:var(--muted)}
+.mv{font-size:12px;color:var(--text)}
+.badge{font-size:11px;padding:2px 7px;border-radius:2px;font-family:var(--font)}
+.badge.g{background:#052e1644;color:#4ade80;border:1px solid #22c55e55}
+.badge.y{background:#42300044;color:#fbbf24;border:1px solid #eab30855}
+.badge.r{background:#2d0a0a44;color:#f87171;border:1px solid #ef444455}
+.ac{display:none}
+.detail{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.dt{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.3px;color:#f0f6ff}
+.ds{font-size:13px;color:var(--muted);margin-top:4px}
+.clr{font-family:var(--font);font-size:12px;padding:5px 12px;border-radius:3px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);cursor:pointer;letter-spacing:.06em}
+.clr:hover{color:var(--text)}
+.dcols{display:grid;grid-template-columns:1fr 1.4fr 1.4fr;gap:12px}
+.dc{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px}
+.dcl{font-size:12px;color:var(--muted);letter-spacing:.08em;margin-bottom:12px;font-weight:600}
+.cbig{font-family:var(--display);font-size:40px;font-weight:700;letter-spacing:.5px;line-height:1;margin-bottom:4px}
+.csub{font-size:12px;color:var(--muted)}
+.crb{margin-top:10px;background:var(--bg3);border-radius:2px;height:5px}
+.crf{height:5px;border-radius:2px}
+.lt{width:100%;border-collapse:collapse;font-size:12px}
+.lt th{font-size:11px;color:var(--muted);font-weight:600;text-align:left;padding-bottom:8px;padding-right:14px;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.lt td{padding:6px 14px 6px 0;border-bottom:1px solid var(--border2)}
+.lt tr:last-child td{border-bottom:none}
+.ldot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.bbr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bbl{font-size:11px;color:var(--muted);width:88px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bbt{flex:1;height:7px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bbf{height:7px;border-radius:3px}
+.bbv{font-size:11px;color:var(--muted);width:36px;text-align:right;flex-shrink:0}
+.df{margin-top:12px;padding:10px 14px;border-radius:5px;font-size:12px;display:flex;gap:16px;flex-wrap:wrap}
+.df.ok{background:#05140844;border:1px solid #22c55e44;color:#4ade80}
+.df.bad{background:#1a060644;border:1px solid #ef444444;color:#fca5a5}
+.sumgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sb{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px}
+.sbl{font-size:12px;color:var(--muted);letter-spacing:.07em;margin-bottom:7px;font-weight:600}
+.sbv{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.3px}
+.sbs{font-size:11px;color:var(--muted2);margin-top:4px}
+.tw{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto}
+.bc{display:flex;gap:5px;align-items:flex-end;min-width:700px;height:230px;padding-bottom:44px;position:relative}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.bstack{width:100%;display:flex;flex-direction:column-reverse}
+.bseg{width:100%}
+.blbl{font-size:11px;color:var(--muted);position:absolute;bottom:-22px;left:50%;transform:translateX(-50%) rotate(-40deg);transform-origin:center;white-space:nowrap}
+.btot{font-size:11px;color:var(--muted);text-align:center;position:absolute;top:-18px;left:0;right:0}
+.leg{display:flex;gap:14px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.cyrow{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:12px}
+.cyc{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:12px 14px}
+.cycl{font-size:12px;color:var(--muted);letter-spacing:.06em;margin-bottom:5px;font-weight:600}
+.cycv{font-family:var(--display);font-size:22px;font-weight:700;color:#f0f6ff}
+.cycs{font-size:11px;color:var(--muted2);margin-top:3px}
+.bktbl{width:100%;border-collapse:collapse}
+.bktbl th{font-size:12px;color:var(--muted);font-weight:600;text-align:right;padding:8px 10px;border-bottom:1px solid var(--border);letter-spacing:.06em}
+.bktbl th:first-child{text-align:left}
+.bktbl td{padding:10px 10px;border-bottom:1px solid var(--border2);font-size:13px}
+.bktbl tr:last-child td{border-bottom:none}
+.conv{font-size:11px}
+.wb{margin-top:12px;padding:12px 16px;background:#1a06062a;border:1px solid #ef444433;border-radius:5px;font-size:12px;color:#fca5a5;line-height:1.5}
+.tmpills{display:flex;gap:5px;flex-wrap:wrap}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">ORCHARD MORTGAGE</div>
+    <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div></div>
+    <button onclick="openSettingsModal()"
+      style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
+      onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
+      onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">
+      ⚙ Settings
+    </button>
+    <button onclick="openUploadModal()"
+      style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid #4a9eff66;background:#4a9eff22;color:#4a9eff;cursor:pointer;white-space:nowrap;transition:all .12s"
+      onmouseover="this.style.background='#4a9eff33'"
+      onmouseout="this.style.background='#4a9eff22'">
+      ↑ Refresh Data
+    </button>
+    <button onclick="document.getElementById('howto-modal').style.display='flex'"
+      style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
+      onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
+      onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">
+      ? How to Use
+    </button>
+  </div>
+</div>
+
+<!-- HOW TO USE MODAL -->
+<div id="howto-modal" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#0d1117;border:1px solid var(--border2);border-radius:10px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative">
+    <button onclick="document.getElementById('howto-modal').style.display='none'"
+      style="position:absolute;top:14px;right:16px;font-family:var(--font);font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);border-radius:3px;padding:3px 9px;cursor:pointer">✕</button>
+    <div style="font-family:var(--display);font-size:20px;font-weight:700;color:#f0f6ff;margin-bottom:18px">How to Use This Dashboard</div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;font-size:13px;color:var(--text);line-height:1.6">
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">DATA SOURCE TOGGLE</div>
+        <div style="color:var(--muted)"><strong style="color:var(--text)">SF-Led</strong> — requires a matching Salesforce OM Opportunity. Shows the full Lead → Funded funnel including contact rates and lead type breakdowns. Use this for pipeline quality and LO engagement analysis.<br><br>
+        <strong style="color:var(--text)">Byte-Led</strong> — every Byte file created regardless of whether an SF lead exists. Starts at App Complete and shows App Complete → Funded only. No contact rate (SF data unavailable for unmatched files). Use this for production volume and true funded counts — it captures ~87 more funded loans than the SF-led view because some loans close without ever being linked to an SF opportunity.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">COHORT YEAR</div>
+        <div style="color:var(--muted)">Filters by the year the lead was <em>created</em> in Salesforce (SF-Led) or the Byte file was created (Byte-Led). Use <strong style="color:var(--text)">2025</strong> for fully seasoned data with reliable funded counts. Use <strong style="color:var(--text)">2026</strong> to see current pipeline activity — funded counts will be understated since most 2026 leads have not had enough time to complete the funnel.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">LOAN OFFICER FILTER</div>
+        <div style="color:var(--muted)">Filter to an individual LO or view the full team. <strong style="color:var(--text)">Other LO</strong> captures all leads and files assigned to LOs outside the current team of four — including former LOs, system default users, and leads assigned to current LOs before their start date (pre-join reassignments). When viewing <strong style="color:var(--text)">All LOs</strong>, Other LO data is included in aggregate totals and shown as a separate grayed row in the detail panel.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">LEAD TYPE FILTER</div>
+        <div style="color:var(--muted)">Available in SF-Led mode only. Filters by the Brokerage Service Name or OM Lead Source field in Salesforce. Move First / Equity Advance is the dominant source at ~70% of all leads. Buy-only Lead Sale is a newer channel started in 2026 — insufficient data for meaningful conversion analysis yet.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">FUNNEL STAGES</div>
+        <div style="color:var(--muted);display:flex;flex-direction:column;gap:6px">
+          <div><strong style="color:var(--text)">Lead</strong> — OM Opportunity created in Salesforce (SF-Led only)</div>
+          <div><strong style="color:var(--text)">App Started</strong> — Blend application initiated, based on SF stage or presence of a Byte file (SF-Led only)</div>
+          <div><strong style="color:var(--text)">App Complete</strong> — Byte file exists, meaning Blend app was fully submitted</div>
+          <div><strong style="color:var(--text)">TRID</strong> — Subject property address added to the application; loan is officially in-progress</div>
+          <div><strong style="color:var(--text)">Lock</strong> — Rate locked. Resolved loans only — files still actively in-progress are excluded from this count</div>
+          <div><strong style="color:var(--text)">Funded</strong> — Loan closed and funded. Bridge loans, second mortgages, and pre-2025 cohorts excluded</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">INTERACTING WITH THE FUNNEL</div>
+        <div style="color:var(--muted)">Click <strong style="color:var(--text)">one stage</strong> to open a detail panel showing contact rate, per-LO counts, and lead type breakdown for that stage. Click <strong style="color:var(--text)">two stages</strong> to see the conversion rate between any pair (e.g. App Complete → Funded). Click a selected stage again to deselect. In Byte-Led mode, Lead and App Started are grayed out and not selectable.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">CONTACT RATE</div>
+        <div style="color:var(--muted)">Available in SF-Led mode only. A lead is considered contacted if there was an outbound call attempt or inbound answered call logged in Dialpad within the selected window (30 or 90 days). Voicemail attempts count. Does not capture SMS, email, or outreach made outside Dialpad. Contact rate is not available for Other LO leads since many are unmatched to SF records.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">TRID → LOCK RATE</div>
+        <div style="color:var(--muted)">This dashboard shows ~87% TRID → Lock because bridge loans and second mortgages are excluded. The company-wide figure of ~46% includes bridge loans, which have Application Dates set but a 0% lock rate — they inflate the denominator without contributing to the numerator. The two numbers are not directly comparable.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">LOCK → FUNDED RATE</div>
+        <div style="color:var(--muted)">Sourced directly from Byte (resolved loans only) regardless of which data source mode is active. SF-matched loans skew toward higher-converting files and are not used for this metric. Target is 75%.</div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--paul);letter-spacing:.08em;margin-bottom:5px">DATA SEASONING</div>
+        <div style="color:var(--muted)">Funded counts take ~9 months to reach 96% of their final value. 2025 cohorts are fully seasoned. 2026 cohorts (especially Mar–May) will show understated funded numbers until they mature. Use <strong style="color:var(--text)">Lock</strong> as the primary conversion benchmark for recent cohorts.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="fg">
+    <div class="fl">
+      DATA SOURCE <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">SF-Led: requires a Salesforce OM Opportunity — shows the full Lead→Funded funnel with contact rates.<br><br>Byte-Led: every Byte file regardless of SF link — App Complete→Funded only, higher coverage.</span></span>
+    </div>
+    <div class="pr" id="srcp"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="fg">
+    <div class="fl">
+      COHORT YEAR <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">Filters by the year the lead was created in Salesforce.<br><br>Does not affect the Lock→Funded rate, which is sourced directly from Byte resolved loans.</span></span>
+    </div>
+    <div class="pr" id="yrp"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="fg"><div class="fl">LOAN OFFICER</div><div class="pr" id="lop"></div></div>
+  <div class="divider" id="src-divider"></div>
+  <div class="fg" id="src-filter" style="flex:1"><div class="fl">LEAD TYPE</div><div class="pr" id="bktp"></div></div>
+  <div class="divider"></div>
+  <div class="fg" id="cw-group"><div class="fl">CONTACT WINDOW <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">A lead is considered contacted if an outbound call attempt or inbound answered call was logged in Dialpad within this window.<br><br>Voicemail attempts count. Does not capture SMS, email, or outreach outside Dialpad.</span></span></div><div style="font-size:11px;color:var(--muted2);margin-bottom:3px">Dialpad outbound attempt or connect within</div><div class="pr" id="cwp"></div></div>
+</div>
+<div class="tabs">
+  <button class="tab active" data-tab="funnel">FUNNEL</button>
+  <button class="tab" data-tab="trend">MONTHLY TREND</button>
+  <button class="tab" data-tab="buckets">BY TYPE</button>
+</div>
+<div class="main">
+  <div id="tab-funnel">
+    <div id="seas-banner" style="display:none"></div>
+    <div class="sumgrid" id="sstats"></div>
+    <div class="hint">CLICK A STAGE TO INSPECT · CLICK TWO STAGES FOR PAIR CONVERSION · CLICK AGAIN TO DESELECT</div>
+    <div class="funnel-grid" id="fcards"></div>
+    <div id="dpanel" style="display:none"></div>
+    <div id="gap-note" style="display:none"></div>
+  </div>
+  <div id="tab-trend" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="hint" style="margin:0">MONTHLY VOLUME BY LO</div>
+      <div class="tmpills" id="tmpp"></div>
+    </div>
+    <div class="tw"><div class="bc" id="bchart"></div><div class="leg" id="bleg"></div></div>
+    <div class="cyrow" id="cycards"></div>
+  </div>
+  <div id="tab-buckets" style="display:none">
+    <div class="hint" style="margin-bottom:12px">FUNNEL BY LEAD TYPE · COUNT AND % FROM LEAD</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <table class="bktbl" id="bktbl"></table>
+    </div>
+    <div class="wb" id="bowarn"></div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div id="upload-modal" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:2000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeUploadModal()">
+  <div style="background:#0d1117;border:1px solid var(--border2);border-radius:10px;max-width:540px;width:100%;padding:28px;position:relative">
+    <button onclick="closeUploadModal()" style="position:absolute;top:14px;right:16px;font-family:var(--font);font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);border-radius:3px;padding:3px 9px;cursor:pointer">✕</button>
+    <div style="font-family:var(--display);font-size:20px;font-weight:700;color:#f0f6ff;margin-bottom:6px">Refresh Data</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Upload both files to rebuild the dashboard. Data is shared — anyone viewing the URL will see the updated numbers.</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin-bottom:6px">SALESFORCE EXPORT <span style="color:var(--muted2);font-weight:400">(LO_Capacity_Lead_Conversion_*.xlsx)</span></div>
+        <input id="sf-file" type="file" accept=".xlsx,.xls" onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin-bottom:6px">BYTE EXPORT <span style="color:var(--muted2);font-weight:400">(LO_Capacity_In_Progress_Funded_*.xlsx)</span></div>
+        <input id="byte-file" type="file" accept=".xlsx,.xls" onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin-bottom:6px">DIALPAD CALL LOG <span style="color:var(--muted2);font-weight:400">(Call_Logs_*.csv — export from Dialpad admin)</span></div>
+        <input id="dial-file" type="file" accept=".csv" onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button id="upload-btn" onclick="doUpload()" disabled style="font-family:var(--font);font-size:13px;padding:10px 24px;border-radius:4px;border:none;background:var(--paul);color:#fff;cursor:pointer;font-weight:600;opacity:0.4">Process & Upload</button>
+      <div id="upload-status" style="font-size:12px;flex:1"></div>
+    </div>
+
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.08em">HOW TO EXPORT</div>
+        <a download="LO_Dashboard_Refresh_Guide.docx" href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,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"
+          style="font-family:var(--font);font-size:11px;padding:4px 12px;border-radius:3px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;text-decoration:none;white-space:nowrap"
+          onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+          ↓ Full Guide (.docx)
+        </a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:11px;color:var(--muted);line-height:1.6">
+
+        <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
+          <span style="color:#4a9eff;font-weight:700">1</span>
+          <span style="color:var(--text);font-weight:600">Salesforce</span>
+          <span>Open <em>LO Capacity – Lead Conversion</em>. Click the ▼ dropdown next to Edit → <strong style="color:var(--text)">Export</strong>. Select <strong style="color:var(--text)">Details Only</strong> and <strong style="color:var(--text)">Excel (.xlsx)</strong>, then Export.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
+          <span style="color:#34d399;font-weight:700">2</span>
+          <span style="color:var(--text);font-weight:600">Byte</span>
+          <span>Find <em>LO Capacity – In Progress Funded</em> in Reports. <strong style="color:var(--text)">Double-click to run</strong> — no filter prompts. File downloads automatically to your Byte reports folder.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
+          <span style="color:#f97316;font-weight:700">3</span>
+          <span style="color:var(--text);font-weight:600">Dialpad</span>
+          <span>Go to <strong style="color:var(--text)">Analytics → All Calls</strong>. Set date filter to <strong style="color:var(--text)">Last 90 Days</strong>. Click Export dropdown → <strong style="color:var(--text)">Export as CSV</strong>. When prompted select <strong style="color:var(--text)">Call Logs</strong>, then <strong style="color:var(--text)">Send Report</strong>. Download from the email you receive.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
+          <span style="color:var(--paul);font-weight:700">4</span>
+          <span style="color:var(--text);font-weight:600">Upload</span>
+          <span>Select all three files using the pickers above, then click <strong style="color:var(--text)">Process &amp; Upload</strong>. Processing runs in your browser (~5–15 sec). Data is shared instantly with anyone who has the URL.</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:2000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeSettingsModal()">
+  <div style="background:#0d1117;border:1px solid var(--border2);border-radius:10px;max-width:700px;width:100%;padding:28px;position:relative;max-height:85vh;overflow-y:auto">
+    <button onclick="closeSettingsModal()" style="position:absolute;top:14px;right:16px;font-family:var(--font);font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--muted);border-radius:3px;padding:3px 9px;cursor:pointer">✕</button>
+    <div style="font-family:var(--display);font-size:20px;font-weight:700;color:#f0f6ff;margin-bottom:6px">Monthly Targets</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Set the monthly pace targets shown on funnel stage cards. Settings are saved to your browser only (not shared).</div>
+    <div id="settings-form"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button onclick="saveAndCloseSettings()" style="font-family:var(--font);font-size:13px;padding:9px 22px;border-radius:4px;border:none;background:var(--paul);color:#fff;cursor:pointer;font-weight:600">Save</button>
+      <button onclick="resetSettings()" style="font-family:var(--font);font-size:13px;padding:9px 22px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer">Reset to defaults</button>
+    </div>
+  </div>
+</div>
+
+<!-- NO DATA BANNER -->
+<div id="no-data-banner" style="display:none;position:fixed;inset:0;background:#07090fee;z-index:1500;align-items:center;justify-content:center">
+  <div style="text-align:center;max-width:420px;padding:40px">
+    <div style="font-family:var(--display);font-size:28px;font-weight:700;color:#f0f6ff;margin-bottom:12px">No Data Loaded</div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px">Upload the Salesforce and Byte exports to build the dashboard. Your data will be shared with anyone who has this URL.</div>
+    <button onclick="document.getElementById('no-data-banner').style.display='none';openUploadModal()" style="font-family:var(--font);font-size:14px;padding:12px 28px;border-radius:4px;border:none;background:var(--paul);color:#fff;cursor:pointer;font-weight:600">Upload Data</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// STATIC CONSTANTS — rules / config (not data-derived)
+// ═══════════════════════════════════════════════════════════════════════════
+const STAGES=[
+  {key:0,label:"Lead",        sub:"OM Opportunity",      color:"#4a9eff",ct:null},
+  {key:1,label:"App Started", sub:"Blend initiated",     color:"#a78bfa",ct:15},
+  {key:2,label:"App Complete",sub:"Byte file created",   color:"#34d399",ct:80},
+  {key:3,label:"TRID",        sub:"Address added",       color:"#f5c842",ct:30},
+  {key:4,label:"Lock",        sub:"Rate locked",         color:"#f97316",ct:90},
+  {key:5,label:"Funded",      sub:"Loan closed",         color:"#f472b6",ct:75},
+];
+const LOS=["Active LOs","All","Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
+const LOC={"Paul Novik":"#4a9eff","Barbara Holder":"#c084fc","Annette De Los Santos":"#34d399","Zac Thiel":"#f5c842","Gen Smith":"#fb923c","Other LO":"#6b7280"};
+const LOSH={"Active LOs":"Active LOs","All":"All LOs","Paul Novik":"Paul N.","Barbara Holder":"Barbara H.","Annette De Los Santos":"Annette De Los Santos","Zac Thiel":"Zac T.","Gen Smith":"Gen S.","Other LO":"Other LO"};
+const LOCS_={"Active LOs":"#e879f9","All":"#94b4d4","Paul Novik":"#4a9eff","Barbara Holder":"#c084fc","Annette De Los Santos":"#34d399","Zac Thiel":"#f5c842","Gen Smith":"#fb923c","Other LO":"#6b7280"};
+const BUCKETS=["All","Move First","List with Orchard","Buy & List","Buy with Orchard","Buy-only","Website","Sphere of Influence","Other"];
+const BSH={"All":"All Sources","Move First":"Move First","List with Orchard":"List w/Orch","Buy & List":"Buy & List","Buy with Orchard":"Buy w/Orch","Buy-only":"Buy-only","Website":"Website","Sphere of Influence":"SOI","Other":"Other"};
+const BC={"Move First":"#4a9eff","List with Orchard":"#34d399","Buy & List":"#a78bfa","Buy with Orchard":"#f5c842","Buy-only":"#ef4444","Website":"#22d3ee","Sphere of Influence":"#f97316","Other":"#6b7280"};
+
+// LO cutoff dates — leads/files before these roll into Other LO
+const LO_CUTOFFS={
+  "Paul Novik":            new Date('2025-01-01'),
+  "Zac Thiel":             new Date('2025-01-01'),
+  "Barbara Holder":        new Date('2025-08-01'),
+  "Annette De Los Santos": new Date('2025-09-01'),
+  "Gen Smith":             new Date('2026-05-12'),
+};
+const ACTIVE_LOS=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"];
+
+// Byte LO username → display name
+const BYTE_LO_MAP={
+  "pnovik":       "Paul Novik",
+  "bholder":      "Barbara Holder",
+  "adelossantos": "Annette De Los Santos",
+  "zthiel":       "Zac Thiel",
+  "gsmith":       "Gen Smith",
+};
+
+// Brokerage Service Name → bucket
+const BSN_MAP={
+  "Move First + Equity Advance":"Move First","Move First":"Move First","Move First + Offer Boost":"Move First",
+  "List with Orchard":"List with Orchard","List with Orchard + GO":"List with Orchard",
+  "Buy & List":"Buy & List",
+  "Buy with Orchard":"Buy with Orchard","Buy with Orchard + CBO":"Buy with Orchard",
+};
+// OM Lead Source → bucket (fallback when Brokerage Service Name is null)
+const SRC_MAP={
+  "Buy-only Lead Sale":"Buy-only",
+  "Website":"Website",
+  "OM Sphere of Influence":"Sphere of Influence",
+  "Orchard Sphere of Influence":"Sphere of Influence",
+};
+
+// SF stages that count as "App Started"
+const APP_STARTED_STAGES=new Set(["Application Started","Pre-Approval Review","Pre-Approved","Loan In-Progress","Closed Loan"]);
+// SF stages excluded from contact rate denominator
+const DEAD_STAGES=new Set(["Dead Lead","Closed Loan"]);
+// Byte loan purposes to exclude
+const EXCLUDE_PURPOSES=new Set(["Other","Second - Purchase Money","Second - Refinance"]);
+// Byte terminal statuses
+const TERMINAL_STATUSES=new Set(["Withdrawn","Withdrawn - Preapproval","Denied","Cancelled","Canceled",
+  "Approved Not Accepted","Preapproval Not Accepted","Preapproval Request Denied",
+  "File Closed For Incompleteness","Approved Not Accepted"]);
+const FUNDED_STATUSES=new Set(["Funded","Purchased","Shipped","Paid"]);
+const LOCKED_STATUSES=new Set(["Funded","Purchased","Shipped","Paid","Locked","Approved","In Processing","Started","Pre-Approved"]);
+
+// Seasoning curve: months since cohort mid-point → % of final funded count
+const SEASONING_BY_MONTH={0:0,1:4.5,2:49.3,3:70.7,4:82.1,5:88.1,6:91.6,7:93.5,8:94.8,9:96.4,10:97.2,11:98.0,12:98.8};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RUNTIME STATE & COMPUTED GLOBALS (set after upload / storage load)
+// ═══════════════════════════════════════════════════════════════════════════
+let MX_SF_ALL={}, MX_SF_2025={}, MX_SF_2026={};
+let MX_BYTE_ALL={}, MX_BYTE_2025={}, MX_BYTE_2026={};
+let MDATA={}, GAP_RECORDS=[], GAP_SUMMARY={};
+let OTHER_TOOLTIP="";
+let MONTHS=[], MLB={}, MONTHS_2025=[], MONTHS_2026=[];
+let MONTHS_MAP={}, MONTHLY_TARGETS={};
+let L2F_RATES={All:68.9,"2025":70.4,"2026":62.5};
+let SEASONING_2025=97, SEASONING_2026=42;
+let DATA_DATE=""; // date string of last upload
+let TODAY_MS=Date.now();
+let DATA_LOADED=false;
+
+let S={lo:"Active LOs",bkt:"All",cw:30,sel:[],tab:"funnel",tm:0,yr:"All",src:"sf"};
+
+// Default targets (overridden by settings storage)
+const DEFAULT_TARGETS={
+  0:{"Paul Novik":400,"Barbara Holder":400,"Annette De Los Santos":400,"Zac Thiel":400,"Gen Smith":400,"Active LOs":2000,"All":2000},
+  1:{"Paul Novik":63, "Barbara Holder":63, "Annette De Los Santos":63, "Zac Thiel":63, "Gen Smith":63, "Active LOs":300,"All":300},
+  3:{"Paul Novik":24, "Barbara Holder":24, "Annette De Los Santos":24, "Zac Thiel":24, "Gen Smith":24, "Active LOs":121,"All":121},
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STORAGE HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+// ── Cloudflare Worker storage ────────────────────────────────────────────────
+const WORKER_URL = "https://orchard-dashboard.paul-giandomenico.workers.dev";
+
+async function storageSave(key, val, shared=false){
+  if(!shared){ // personal settings stay in localStorage
+    try{ localStorage.setItem('orchard_'+key, JSON.stringify(val)); } catch(e){}
+    return;
+  }
+  // Shared data (dashboard payload) → Worker POST
+  // Strip large base64 from docx embed if present
+  const payload = typeof val === 'object' ? val : JSON.parse(JSON.stringify(val));
+  try{
+    const res = await fetch(WORKER_URL+'/data', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({error:'Unknown error'}));
+      throw new Error(err.error || res.statusText);
+    }
+  } catch(e){ console.warn('Worker save failed:',e); throw e; }
+}
+
+async function storageLoad(key, shared=false){
+  if(!shared){ // personal settings from localStorage
+    try{
+      const v = localStorage.getItem('orchard_'+key);
+      return v ? JSON.parse(v) : null;
+    } catch(e){ return null; }
+  }
+  // Shared data → Worker GET
+  if(WORKER_URL === "REPLACE_WITH_YOUR_WORKER_URL") return null;
+  try{
+    const res = await fetch(WORKER_URL+'/data', {cache:'no-store'});
+    if(res.status===404) return null;
+    if(!res.ok) throw new Error(res.statusText);
+    return await res.json();
+  } catch(e){ console.warn('Worker load failed:',e); return null; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MATRIX BUILDER (JS port of Python logic)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function parseDate(v){
+  if(!v || v==='' || v===null || v===undefined) return null;
+  if(v instanceof Date) return isNaN(v) ? null : v;
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+
+function assignLO(sfLoanOfficer, createdDate){
+  const lo = sfLoanOfficer || 'Other LO';
+  if(LO_CUTOFFS[lo] && createdDate < LO_CUTOFFS[lo]) return 'Other LO';
+  if(!LO_CUTOFFS[lo] && lo !== 'Other LO') return 'Other LO';
+  return lo;
+}
+
+function assignBucket(bsn, src){
+  if(bsn && BSN_MAP[bsn]) return BSN_MAP[bsn];
+  if(!bsn && src && SRC_MAP[src]) return SRC_MAP[src];
+  return 'Other';
+}
+
+function buildMonthKey(d){ 
+  if(!d) return null;
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+
+function parseDialpadCSV(text){
+  // Parse CSV manually to avoid SheetJS dependency for CSV
+  const lines = text.split(/\r?\n/);
+  if(lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    // Simple CSV parse (handles quoted fields)
+    const vals = [];
+    let cur='', inQ=false;
+    for(let c of lines[i]){
+      if(c==='"'){inQ=!inQ;}
+      else if(c===',' && !inQ){vals.push(cur);cur='';}
+      else cur+=c;
+    }
+    vals.push(cur);
+    if(vals.length < headers.length) continue;
+    const row={};
+    headers.forEach((h,idx)=>row[h]=vals[idx]||'');
+    rows.push(row);
+  }
+  return rows;
+}
+
+function buildPhoneContactMap(dialRows){
+  // Returns {phone: {dp_30: bool, dp_90: bool}}
+  const todayMs = TODAY_MS || Date.now();
+  const cutoff30 = todayMs - 30*864e5;
+  const cutoff90 = todayMs - 90*864e5;
+  // All UserProfile callers — includes LOAs and any team member, not just active LOs
+
+  const map30 = new Map(); // phone -> true if any contact in 30d
+  const map90 = new Map(); // phone -> true if any contact in 90d
+
+  for(const r of dialRows){
+    if(r['target_kind'] !== 'UserProfile') continue;
+    if(r['is_internal']==='True'||r['is_internal']===true||r['is_internal']==='true') continue;
+    // No name filter — count calls from any team member
+
+    const phone = normPhone(r['external_number']);
+    if(!phone) continue;
+
+    const ts = new Date(r['date_started']).getTime();
+    if(isNaN(ts)) continue;
+
+    // Contacted = outbound attempt OR inbound answered
+    const dir = (r['direction']||'').toLowerCase();
+    const cats = (r['categories']||'').toLowerCase();
+    const isContacted = dir==='outbound' || (dir==='inbound' && cats.includes('answered'));
+    if(!isContacted) continue;
+
+    if(ts >= cutoff30){ map30.set(phone, true); }
+    if(ts >= cutoff90){ map90.set(phone, true); }
+  }
+
+  return {map30, map90};
+}
+
+function normPhone(p){
+  if(!p) return null;
+  const digits = String(p).replace(/\D/g,'');
+  if(digits.length===11 && digits[0]==='1') return digits.slice(1);
+  return digits.length===10 ? digits : null;
+}
+function buildSFMatrices(sfRows, byteMap, phoneContactMap){
+  // sfRows: array of SF lead objects (normalized column names)
+  // byteMap: {fileNum -> byteRow}
+
+  const today = new Date(TODAY_MS);
+  const cutoff30 = new Date(TODAY_MS - 30*864e5);
+  const cutoff90 = new Date(TODAY_MS - 90*864e5);
+
+  // Enrich each SF row
+  const rows = sfRows.map(r => {
+    const created = parseDate(r['Created Date']);
+    if(!created || created.getFullYear() < 2025) return null;
+    const lo = assignLO(r['Loan Officer'], created);
+    const bucket = assignBucket(r['Brokerage Service Name'], r['OM Lead Source']);
+    const fileKey = String(r['Primary Byte File Name']||'').trim();
+    const byteRow = byteMap[fileKey] || null;
+    const lastActivity = parseDate(r['Last Activity Date']);
+    const stage = r['Stage'] || '';
+
+    const hasFile = !!byteRow;
+    const appDate  = byteRow ? parseDate(byteRow['Application Date']) : null;
+    const lockDate = byteRow ? parseDate(byteRow['Lock Start Date'])   : null;
+    const fundDate = byteRow ? parseDate(byteRow['Funded Date'])       : null;
+
+    const appStarted  = APP_STARTED_STAGES.has(stage) || hasFile;
+    const appComplete = hasFile;
+    const hasTrid     = !!appDate;
+    const hasLock     = !!lockDate;
+    const hasFunded   = !!fundDate;
+    const isOpen      = !DEAD_STAGES.has(stage);
+    const sf30        = lastActivity ? lastActivity >= cutoff30 : false;
+    const sf90        = lastActivity ? lastActivity >= cutoff90 : false;
+    const year        = created.getFullYear();
+    const monthKey    = buildMonthKey(created);
+
+    return {lo, bucket, year, monthKey, stage, isOpen, appStarted, appComplete, hasTrid, hasLock, hasFunded, sf30, sf90};
+  }).filter(Boolean);
+
+  // Build matrix for a subset of rows
+  function buildMatrix(subset){
+    const result = {};
+    const allLOs = [...ACTIVE_LOS, 'Other LO', 'All'];
+    const allBkts = [...BUCKETS]; // includes "All"
+
+    for(const lo of allLOs){
+      result[lo] = {};
+      const loRows = lo === 'All' ? subset : subset.filter(r => r.lo === lo);
+      for(const bkt of allBkts){
+        const rows = bkt === 'All' ? loRows : loRows.filter(r => r.bucket === bkt);
+        const n = rows.length;
+
+        const f0 = n;
+        const f1 = rows.filter(r => r.appStarted).length;
+        const f2 = rows.filter(r => r.appComplete).length;
+        const f3 = rows.filter(r => r.hasTrid).length;
+        const f4 = rows.filter(r => r.hasLock).length;
+        const f5 = rows.filter(r => r.hasFunded).length;
+
+        const openAll  = rows.filter(r => r.isOpen);
+        const openAppS = rows.filter(r => r.appStarted && r.isOpen);
+        const openAppC = rows.filter(r => r.appComplete && r.isOpen);
+        const openTrid = rows.filter(r => r.hasTrid && r.isOpen);
+        const openLock = rows.filter(r => r.hasLock && r.isOpen);
+
+        const c30 = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.filter(r=>r.sf30).length);
+        const c90 = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.filter(r=>r.sf90).length);
+        const oc  = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.length);
+
+        result[lo][bkt] = {
+          funnel:[f0,f1,f2,f3,f4,f5],
+          contact30:c30[0], contact90:c90[0],
+          c30, c90, open_counts:oc,
+          total:n, open_total:oc[0]
+        };
+      }
+    }
+    return result;
+  }
+
+  const all25  = rows.filter(r => r.year >= 2025);
+  const only25 = rows.filter(r => r.year === 2025);
+  const only26 = rows.filter(r => r.year === 2026);
+
+  // Add Active LOs = sum of 5 active LO buckets
+  function addActiveLOs(mx){
+    const keys = ["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"];
+    const bkts = Object.keys(mx["All"] || {});
+    mx["Active LOs"] = {};
+    for(const bkt of bkts){
+      const entries = keys.map(k => mx[k]?.[bkt]).filter(Boolean);
+      if(!entries.length) continue;
+      mx["Active LOs"][bkt] = {
+        funnel: Array.from({length:6},(_,i)=>entries.reduce((s,e)=>s+(e.funnel[i]||0),0)),
+        contact30: entries.reduce((s,e)=>s+e.contact30,0),
+        contact90: entries.reduce((s,e)=>s+e.contact90,0),
+        c30: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.c30[i]||0),0)),
+        c90: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.c90[i]||0),0)),
+        open_counts: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.open_counts[i]||0),0)),
+        total: entries.reduce((s,e)=>s+e.total,0),
+        open_total: entries.reduce((s,e)=>s+e.open_total,0),
+      };
+    }
+    return mx;
+  }
+
+  return {
+    MX_SF_ALL:  addActiveLOs(buildMatrix(all25)),
+    MX_SF_2025: addActiveLOs(buildMatrix(only25)),
+    MX_SF_2026: addActiveLOs(buildMatrix(only26)),
+  };
+}
+
+function buildByteMatrices(byteRows){
+  const rows = byteRows.map(r => {
+    const purpose = r['Loan Purpose'] || '';
+    if(EXCLUDE_PURPOSES.has(purpose)) return null;
+    const created = parseDate(r['Date Created']);
+    if(!created || created.getFullYear() < 2025) return null;
+    const loRaw = String(r['Loan Officer User Name']||'').trim().toLowerCase();
+    const lo = BYTE_LO_MAP[loRaw] || 'Other LO';
+    const appDate  = parseDate(r['Application Date']);
+    const lockDate = parseDate(r['Lock Start Date']);
+    const fundDate = parseDate(r['Funded Date']);
+    const year = created.getFullYear();
+    return {lo, year, hasTrid:!!appDate, hasLock:!!lockDate, hasFunded:!!fundDate};
+  }).filter(Boolean);
+
+  function buildMatrix(subset){
+    const result = {};
+    const allLOs = [...ACTIVE_LOS, 'Other LO', 'All'];
+    for(const lo of allLOs){
+      const loRows = lo === 'All' ? subset : subset.filter(r => r.lo === lo);
+      const n = loRows.length;
+      result[lo] = {All:{
+        funnel:[n, loRows.filter(r=>r.hasTrid).length, loRows.filter(r=>r.hasLock).length, loRows.filter(r=>r.hasFunded).length],
+        total:n
+      }};
+    }
+    return result;
+  }
+
+  const all25  = rows.filter(r => r.year >= 2025);
+  const only25 = rows.filter(r => r.year === 2025);
+  const only26 = rows.filter(r => r.year === 2026);
+
+  function addByteActiveLOs(mx){
+    const keys=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"];
+    const entries=keys.map(k=>mx[k]?.['All']).filter(Boolean);
+    if(!entries.length) return mx;
+    mx["Active LOs"]={'All':{
+      funnel:Array.from({length:4},(_,i)=>entries.reduce((s,e)=>s+(e.funnel[i]||0),0)),
+      total:entries.reduce((s,e)=>s+e.total,0)
+    }};
+    return mx;
+  }
+  return {
+    MX_BYTE_ALL:  addByteActiveLOs(buildMatrix(all25)),
+    MX_BYTE_2025: addByteActiveLOs(buildMatrix(only25)),
+    MX_BYTE_2026: addByteActiveLOs(buildMatrix(only26)),
+  };
+}
+
+function buildMDATA(sfRows){
+  // Dynamic month range: Jan 2025 → current month of latest lead
+  const rows = sfRows.map(r => {
+    const d = parseDate(r['Created Date']);
+    if(!d || d.getFullYear() < 2025) return null;
+    const lo = assignLO(r['Loan Officer'], d);
+    return {lo, monthKey: buildMonthKey(d), year: d.getFullYear()};
+  }).filter(Boolean);
+
+  // Find all months from Jan 2025 to latest
+  const allMonths = [...new Set(rows.map(r => r.monthKey))].sort();
+  // Fill any gaps
+  const months = [];
+  if(allMonths.length > 0){
+    let cur = new Date('2025-01-01');
+    const last = new Date(allMonths[allMonths.length-1]+'-01');
+    while(cur <= last){
+      months.push(buildMonthKey(cur));
+      cur.setMonth(cur.getMonth()+1);
+    }
+  }
+
+  const mdata = {};
+  const allLOs = [...ACTIVE_LOS, 'Other LO'];
+  for(const lo of allLOs){
+    mdata[lo] = months.map(m => rows.filter(r => r.lo===lo && r.monthKey===m).length);
+  }
+
+  // MLB: month labels
+  const mlb = {};
+  months.forEach(m => {
+    const [yr, mo] = m.split('-');
+    const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const name = names[parseInt(mo)-1];
+    const isFirstMonthOfYear = mo === '01';
+    mlb[m] = (isFirstMonthOfYear || m === months[0]) ? name+" '"+yr.slice(2) : name;
+    // Add asterisk for current month
+    const now = new Date(TODAY_MS);
+    if(parseInt(yr)===now.getFullYear() && parseInt(mo)-1===now.getMonth()) mlb[m]+='*';
+  });
+
+  return {MDATA:mdata, MONTHS:months, MLB:mlb,
+    MONTHS_2025: months.filter(m => m.startsWith('2025')),
+    MONTHS_2026: months.filter(m => m.startsWith('2026'))
+  };
+}
+
+function buildL2FRates(byteRows){
+  // Lock → Funded rate from resolved Byte loans (terminal + funded, has lock date)
+  const resolved = byteRows.filter(r => {
+    const purpose = r['Loan Purpose']||'';
+    if(EXCLUDE_PURPOSES.has(purpose)) return false;
+    const status = r['Loan Status']||'';
+    return TERMINAL_STATUSES.has(status) || FUNDED_STATUSES.has(status);
+  });
+
+  function rate(subset){
+    const withLock = subset.filter(r => parseDate(r['Lock Start Date']));
+    const funded = withLock.filter(r => FUNDED_STATUSES.has(r['Loan Status']||''));
+    return withLock.length > 0 ? (funded.length / withLock.length * 100) : 0;
+  }
+
+  const all  = resolved;
+  const y25  = resolved.filter(r => { const d=parseDate(r['Date Created']); return d && d.getFullYear()===2025; });
+  const y26  = resolved.filter(r => { const d=parseDate(r['Date Created']); return d && d.getFullYear()===2026; });
+
+  return {
+    All:  parseFloat(rate(all).toFixed(1)),
+    "2025": parseFloat(rate(y25).toFixed(1)),
+    "2026": parseFloat(rate(y26).toFixed(1)),
+  };
+}
+
+function buildSeasoning(byteRows){
+  // Seasoning: funded counts as % of expected final value
+  // Use the seasoning curve to estimate what % of final funded count we should have by now
+  // For each year cohort, compute weighted avg expected seasoning
+  function computeSeasoning(rows){
+    if(rows.length === 0) return 100;
+    const now = new Date(TODAY_MS);
+    let wSum=0, total=0;
+    const monthCounts = {};
+    rows.forEach(r => {
+      const d = parseDate(r['Date Created']);
+      if(!d) return;
+      const mk = buildMonthKey(d);
+      monthCounts[mk] = (monthCounts[mk]||0)+1;
+    });
+    Object.entries(monthCounts).forEach(([m, cnt]) => {
+      const mid = new Date(m+'-15');
+      const ageMo = (now - mid)/(1000*60*60*24*30.44);
+      const lo=Math.floor(ageMo), hi=lo+1, frac=ageMo-lo;
+      const loV=SEASONING_BY_MONTH[Math.min(lo,12)]??98.8;
+      const hiV=SEASONING_BY_MONTH[Math.min(hi,12)]??98.8;
+      const s = Math.min(loV+(hiV-loV)*frac, 98.8);
+      total += cnt * s; wSum += cnt;
+    });
+    return wSum > 0 ? parseFloat((total/wSum).toFixed(0)) : 100;
+  }
+
+  const noExclude = byteRows.filter(r => !EXCLUDE_PURPOSES.has(r['Loan Purpose']||''));
+  const y25 = noExclude.filter(r => { const d=parseDate(r['Date Created']); return d&&d.getFullYear()===2025; });
+  const y26 = noExclude.filter(r => { const d=parseDate(r['Date Created']); return d&&d.getFullYear()===2026; });
+
+  return { s2025: computeSeasoning(y25), s2026: computeSeasoning(y26) };
+}
+
+function buildMonthsMap(sfRows){
+  const today = new Date(TODAY_MS);
+  const map = {};
+  for(const [cohort, filter] of [['All',r=>r.year>=2025],['2025',r=>r.year===2025],['2026',r=>r.year===2026]]){
+    map[cohort] = {};
+    for(const lo of [...ACTIVE_LOS,'Other LO','All']){
+      const cutoff = LO_CUTOFFS[lo] || new Date('2025-01-01');
+      let start;
+      if(cohort==='2025'){
+        start = new Date(Math.max(cutoff.getTime(), new Date('2025-01-01').getTime()));
+        const end = new Date('2025-12-31');
+        const diff = (Math.min(today,end) - start)/(1000*60*60*24*30.44);
+        map[cohort][lo] = parseFloat(Math.max(0,diff).toFixed(1));
+      } else if(cohort==='2026'){
+        start = new Date('2026-01-01');
+        const diff = (today - start)/(1000*60*60*24*30.44);
+        map[cohort][lo] = parseFloat(Math.max(0,diff).toFixed(1));
+      } else {
+        // All: from LO cutoff to today
+        start = new Date(Math.max(cutoff.getTime(), new Date('2025-01-01').getTime()));
+        const diff = (today - start)/(1000*60*60*24*30.44);
+        map[cohort][lo] = parseFloat(Math.max(0,diff).toFixed(1));
+      }
+    }
+    // "All" LO = Paul/Zac start date (Jan 2025) for full team
+    if(cohort==='All'){
+      const start = new Date('2025-01-01');
+      map[cohort]['All'] = parseFloat(((today-start)/(1000*60*60*24*30.44)).toFixed(1));
+    }
+  }
+  return map;
+}
+
+function buildGapRecords(byteRows, sfRows){
+  // Build a set of SF file numbers and borrower names
+  const sfFiles = new Set(sfRows.map(r => String(r['Primary Byte File Name']||'').trim()).filter(Boolean));
+
+  function normName(n){
+    if(!n) return '';
+    return n.toLowerCase().replace(/[^a-z]/g,'').trim();
+  }
+  const sfNames = new Map();
+  sfRows.forEach(r => {
+    const n = normName(r['OM Application Name']);
+    if(n) sfNames.set(n, true);
+  });
+
+  const gapRecords = [];
+  const gapSummary = {};
+
+  byteRows.forEach(r => {
+    const fn = String(r['File Name']||'').trim();
+    const created = parseDate(r['Date Created']);
+    if(!created || created.getFullYear() < 2025) return;
+    if(EXCLUDE_PURPOSES.has(r['Loan Purpose']||'')) return;
+
+    // Check if file number matches SF
+    if(sfFiles.has(fn)) return;
+
+    // Check borrower name match
+    const borrower = r['Bor 1 Last Then First Name']||'';
+    const normBorrower = normName(borrower);
+    if(normBorrower && sfNames.has(normBorrower)) return;
+
+    // This is a gap record — categorize
+    const status = r['Loan Status']||'';
+    const loRaw = String(r['Loan Officer User Name']||'').trim();
+    const lo = BYTE_LO_MAP[loRaw.toLowerCase()] || loRaw;
+    const appDate  = r['Application Date']||'';
+    const lockDate = r['Lock Start Date']||'';
+    const fundDate = r['Funded Date']||'';
+
+    let designation;
+    if(FUNDED_STATUSES.has(status)){
+      designation='Funded - No SF Record';
+    } else if(TERMINAL_STATUSES.has(status)){
+      // Check if sibling file exists in SF (orphaned dupe)
+      designation='Withdrawn/Denied - No SF Record';
+    } else if(['Started'].includes(status) && !appDate){
+      designation='Started - No SF Record';
+    } else {
+      designation='Active Pipeline - No SF Record';
+    }
+
+    gapRecords.push({
+      file: parseInt(fn)||fn,
+      borrower: borrower,
+      lo_raw: loRaw,
+      lo: lo,
+      created: buildMonthKey(created) ? (created.getFullYear()+'-'+String(created.getMonth()+1).padStart(2,'0')+'-'+String(created.getDate()).padStart(2,'0')) : '',
+      app_date:   appDate  ? String(appDate).slice(0,10)  : '',
+      lock_date:  lockDate ? String(lockDate).slice(0,10) : '',
+      funded_date:fundDate ? String(fundDate).slice(0,10) : '',
+      status: status,
+      designation: designation,
+    });
+
+    gapSummary[designation] = (gapSummary[designation]||0)+1;
+  });
+
+  return {GAP_RECORDS: gapRecords, GAP_SUMMARY: gapSummary};
+}
+
+function buildOtherTooltip(sfRows){
+  // Count what's in the "Other" bucket
+  const counts = {};
+  sfRows.forEach(r => {
+    const created = parseDate(r['Created Date']);
+    if(!created || created.getFullYear() < 2025) return;
+    const bsn = r['Brokerage Service Name'];
+    const src = r['OM Lead Source']||'';
+    if(!bsn && !SRC_MAP[src] && src !== 'Buy-only Lead Sale' && src !== 'Website'){
+      const key = src || '(unmapped)';
+      counts[key] = (counts[key]||0)+1;
+    } else if(bsn && !BSN_MAP[bsn]){
+      counts[bsn] = (counts[bsn]||0)+1;
+    }
+  });
+  if(Object.keys(counts).length === 0) return 'Small group of miscellaneous lead sources.';
+  const parts = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+' ('+v+')');
+  return 'Includes: '+parts.join(', ')+'.';
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROCESS UPLOAD: parse Excel → build all matrices → save to storage
+// ═══════════════════════════════════════════════════════════════════════════
+async function processUpload(sfFile, byteFile, dialFile){
+  const statusEl = document.getElementById('upload-status');
+  function setStatus(msg, color='var(--muted)'){
+    if(statusEl) statusEl.innerHTML = '<span style="color:'+color+'">'+msg+'</span>';
+  }
+
+  setStatus('Reading files…');
+  try {
+    // Parse both Excel files via SheetJS
+    const [sfWB, byteWB] = await Promise.all([
+      readExcel(sfFile),
+      readExcel(byteFile),
+    ]);
+
+    setStatus('Parsing Salesforce data…');
+    const sfRows = XLSX.utils.sheet_to_json(sfWB.Sheets[sfWB.SheetNames[0]], {defval:null, raw:false});
+    setStatus('Parsing Byte data…');
+    const byteRows = XLSX.utils.sheet_to_json(byteWB.Sheets[byteWB.SheetNames[0]], {defval:null, raw:false});
+    setStatus('Parsing Dialpad call log…');
+    const dialText = await dialFile.text();
+    const dialRows = parseDialpadCSV(dialText);
+
+    setStatus('Building Byte lookup…');
+    const byteMap = {};
+    byteRows.forEach(r => {
+      const fn = String(r['File Name']||'').trim();
+      if(fn) byteMap[fn] = r;
+    });
+
+    setStatus('Building SF matrices (this takes ~5s)…');
+    await tick();
+    const phoneContactMap = buildPhoneContactMap(dialRows);
+    const sfMx = buildSFMatrices(sfRows, byteMap, phoneContactMap);
+
+    setStatus('Building Byte matrices…');
+    await tick();
+    const byteMx = buildByteMatrices(byteRows);
+
+    setStatus('Building monthly data…');
+    await tick();
+    const mdataResult = buildMDATA(sfRows);
+
+    setStatus('Computing L2F rates…');
+    const l2f = buildL2FRates(byteRows);
+    const seas = buildSeasoning(byteRows);
+    const mmap = buildMonthsMap(sfRows);
+    const gapResult = buildGapRecords(byteRows, sfRows);
+    const otherTip = buildOtherTooltip(sfRows);
+
+    setStatus('Saving to shared storage…');
+    await tick();
+    const payload = {
+      ...sfMx, ...byteMx,
+      MDATA:mdataResult.MDATA,
+      MONTHS:mdataResult.MONTHS,
+      MLB:mdataResult.MLB,
+      MONTHS_2025:mdataResult.MONTHS_2025,
+      MONTHS_2026:mdataResult.MONTHS_2026,
+      L2F_RATES:l2f,
+      SEASONING_2025:seas.s2025,
+      SEASONING_2026:seas.s2026,
+      MONTHS_MAP:mmap,
+      GAP_RECORDS:gapResult.GAP_RECORDS,
+      GAP_SUMMARY:gapResult.GAP_SUMMARY,
+      OTHER_TOOLTIP:otherTip,
+      DATA_DATE: new Date(TODAY_MS).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    };
+    // Add column lists for server-side validation
+    payload.sf_cols   = sfRows.length   ? Object.keys(sfRows[0])   : [];
+    payload.byte_cols = byteRows.length ? Object.keys(byteRows[0]) : [];
+    payload.dial_cols = dialRows.length ? Object.keys(dialRows[0]) : [];
+    await storageSave('dashboard_data', payload, true);
+
+    setStatus('✓ Upload complete! Dashboard updated.','var(--green)');
+    // Update the data-as-of label
+    const metaEl = document.querySelector('.header-meta');
+    if(metaEl) metaEl.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">Data as of '+payload.DATA_DATE+'</div>';
+    applyPayload(payload);
+    setTimeout(()=>closeUploadModal(),1500);
+
+  } catch(err){
+    console.error(err);
+    setStatus('✗ Error: '+err.message,'var(--red)');
+  }
+}
+
+function readExcel(file){
+  return new Promise((res,rej)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
+        res(wb);
+      } catch(err){ rej(err); }
+    };
+    reader.onerror = ()=>rej(new Error('File read error'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function tick(){ return new Promise(r => setTimeout(r, 0)); }
+
+function applyPayload(p){
+  MX_SF_ALL   = p.MX_SF_ALL   || {};
+  MX_SF_2025  = p.MX_SF_2025  || {};
+  MX_SF_2026  = p.MX_SF_2026  || {};
+  MX_BYTE_ALL  = p.MX_BYTE_ALL  || {};
+  MX_BYTE_2025 = p.MX_BYTE_2025 || {};
+  MX_BYTE_2026 = p.MX_BYTE_2026 || {};
+  MDATA       = p.MDATA       || {};
+  MONTHS      = p.MONTHS      || [];
+  MLB         = p.MLB         || {};
+  MONTHS_2025 = p.MONTHS_2025 || [];
+  MONTHS_2026 = p.MONTHS_2026 || [];
+  L2F_RATES   = p.L2F_RATES   || {All:0,'2025':0,'2026':0};
+  SEASONING_2025 = p.SEASONING_2025 ?? 97;
+  SEASONING_2026 = p.SEASONING_2026 ?? 42;
+  MONTHS_MAP  = p.MONTHS_MAP  || {};
+  GAP_RECORDS = p.GAP_RECORDS || [];
+  GAP_SUMMARY = p.GAP_SUMMARY || {};
+  OTHER_TOOLTIP = p.OTHER_TOOLTIP || '';
+  DATA_DATE   = p.DATA_DATE   || '';
+  DATA_LOADED = true;
+  TODAY_MS    = Date.now();
+
+  // Update header
+  const sub = document.querySelector('.header-sub');
+  if(sub && MONTHS.length){
+    const first = MONTHS[0].replace('-',' ').replace('2025','Jan 2025').replace(/-(\d+)/,(m,n)=>' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(n)-1]);
+    const last  = MONTHS[MONTHS.length-1];
+    const [yr,mo] = last.split('-');
+    const lastLabel = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(mo)-1]+' '+yr;
+    sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
+  }
+  const meta = document.querySelector('.header-meta');
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div>'+(DATA_DATE?'<div style="color:var(--muted2);font-size:11px">Data as of '+DATA_DATE+'</div>':'');
+
+  // Rebuild getOverallSeasoning weight table
+  window._MDATA_WEIGHTS = MDATA;
+
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS STORAGE
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadSettings(){
+  const saved = await storageLoad('dashboard_settings', false);
+  if(saved && saved.targets){
+    MONTHLY_TARGETS = saved.targets;
+  } else {
+    MONTHLY_TARGETS = JSON.parse(JSON.stringify(DEFAULT_TARGETS));
+  }
+}
+async function saveSettings(){
+  await storageSave('dashboard_settings', {targets: MONTHLY_TARGETS}, false);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function getL2F(){ return L2F_RATES[S.yr] ?? L2F_RATES['All'] ?? 0; }
+function getMonths(){ return Math.max(1, (MONTHS_MAP[S.yr]||MONTHS_MAP['All']||{})[S.lo] || 16.4); }
+function getMonthlyTarget(stageIdx){ const t=MONTHLY_TARGETS[stageIdx]; return t?(t[S.lo]||null):null; }
+function getMX(){
+  if(S.src==="byte") return S.yr==="2025"?MX_BYTE_2025:S.yr==="2026"?MX_BYTE_2026:MX_BYTE_ALL;
+  return S.yr==="2025"?MX_SF_2025:S.yr==="2026"?MX_SF_2026:MX_SF_ALL;
+}
+function gd(){const mx=getMX();return mx[S.lo]?.["All"]||mx["All"]?.["All"]||{funnel:[0,0,0,0,0,0],c30:[0,0,0,0,0],c90:[0,0,0,0,0],open_counts:[0,0,0,0,0],total:0,open_total:0};}
+// "Active LOs" and "All" are pre-aggregated keys in the matrices
+function gdBkt(){
+  if(S.src==="byte") return gd();
+  const mx=getMX();return mx[S.lo]?.[S.bkt]||mx["Active LOs"]?.[S.bkt]||mx["All"]?.[S.bkt]||gd();
+}
+function getActiveSeasoning(){return S.yr==="2025"?SEASONING_2025:S.yr==="2026"?SEASONING_2026:getOverallSeasoning();}
+function getActiveMonths(){return S.yr==="2025"?MONTHS_2025:S.yr==="2026"?MONTHS_2026:MONTHS;}
+function fmt(n){return typeof n==="number"?n.toLocaleString():"—";}
+function pc(n,d){return d>0?(n/d*100).toFixed(1)+"%":"—";}
+function bcls(v,t){if(!t)return"";return v>=t?"g":v>=t*.7?"y":"r";}
+function ccol(v,t){if(!t)return"var(--text)";return v>=t?"var(--green)":v>=t*.7?"var(--yellow)":"var(--red)";}
+
+function getSeasoningPct(monthStr){
+  const mid=new Date(monthStr+'-15').getTime();
+  const ageMo=(TODAY_MS-mid)/(1000*60*60*24*30.44);
+  const lo=Math.floor(ageMo),hi=lo+1,frac=ageMo-lo;
+  const loV=SEASONING_BY_MONTH[Math.min(lo,12)]??98.8;
+  const hiV=SEASONING_BY_MONTH[Math.min(hi,12)]??98.8;
+  return Math.min(loV+(hiV-loV)*frac,98.8);
+}
+function getOverallSeasoning(){
+  if(!MONTHS || MONTHS.length===0) return 85;
+  const weights = window._MDATA_WEIGHTS || MDATA;
+  let wSum=0, total=0;
+  MONTHS.forEach(m=>{
+    const w = Object.values(weights).reduce((s,arr)=>{
+      const idx = MONTHS.indexOf(m);
+      return s+(idx>=0?arr[idx]||0:0);
+    },0);
+    total+=w*getSeasoningPct(m); wSum+=w;
+  });
+  return wSum>0?total/wSum:85;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UPLOAD MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+function openUploadModal(){
+  document.getElementById('upload-modal').style.display='flex';
+  document.getElementById('upload-status').innerHTML='';
+  document.getElementById('sf-file').value='';
+  document.getElementById('byte-file').value='';
+  updateUploadBtn();
+}
+function closeUploadModal(){
+  document.getElementById('upload-modal').style.display='none';
+}
+function updateUploadBtn(){
+  const sf   = document.getElementById('sf-file').files[0];
+  const byte = document.getElementById('byte-file').files[0];
+  const dial = document.getElementById('dial-file').files[0];
+  const btn  = document.getElementById('upload-btn');
+  btn.disabled = !(sf && byte && dial);
+  btn.style.opacity = (sf && byte && dial) ? '1' : '0.4';
+}
+async function doUpload(){
+  const sf   = document.getElementById('sf-file').files[0];
+  const byte = document.getElementById('byte-file').files[0];
+  const dial = document.getElementById('dial-file').files[0];
+  if(!sf || !byte || !dial) return;
+  document.getElementById('upload-btn').disabled = true;
+  await processUpload(sf, byte, dial);
+  document.getElementById('upload-btn').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+function openSettingsModal(){
+  const modal = document.getElementById('settings-modal');
+  modal.style.display='flex';
+  renderSettingsForm();
+}
+function closeSettingsModal(){
+  document.getElementById('settings-modal').style.display='none';
+}
+function renderSettingsForm(){
+  const los = [...ACTIVE_LOS,'All'];
+  const stages = [
+    {idx:0, label:'Leads/mo'},
+    {idx:1, label:'App Starts/mo'},
+    {idx:3, label:'TRIDs/mo'},
+  ];
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+  html += '<thead><tr><th style="text-align:left;padding:8px 12px;color:var(--muted);font-size:11px;letter-spacing:.08em;border-bottom:1px solid var(--border)">STAGE</th>';
+  los.forEach(lo => {
+    const short = lo==='Annette De Los Santos'?'Annette':lo==='All'?'All LOs':lo.split(' ')[0];
+    html += '<th style="text-align:center;padding:8px 8px;color:var(--muted);font-size:11px;letter-spacing:.08em;border-bottom:1px solid var(--border)">'+short+'</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  stages.forEach(({idx,label},ri) => {
+    html += '<tr style="background:'+(ri%2===0?'var(--bg2)':'var(--bg)')+'">';
+    html += '<td style="padding:10px 12px;color:var(--text);font-weight:500">'+label+'</td>';
+    los.forEach(lo => {
+      const val = (MONTHLY_TARGETS[idx]||{})[lo] || '';
+      html += '<td style="padding:6px 8px;text-align:center">';
+      html += '<input type="number" min="1" max="9999" value="'+val+'" '
+            + 'data-stage="'+idx+'" data-lo="'+lo.replace(/"/g,'&quot;')+'" '
+            + 'style="width:64px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);'
+            + 'border-radius:3px;padding:4px 6px;font-family:var(--font);font-size:12px;text-align:center" '
+            + 'onchange="updateTarget(this)">';
+      html += '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('settings-form').innerHTML = html;
+}
+function updateTarget(el){
+  const stage = parseInt(el.dataset.stage);
+  const lo    = el.dataset.lo;
+  const val   = parseInt(el.value) || 0;
+  if(!MONTHLY_TARGETS[stage]) MONTHLY_TARGETS[stage]={};
+  MONTHLY_TARGETS[stage][lo] = val;
+}
+async function saveAndCloseSettings(){
+  await saveSettings();
+  closeSettingsModal();
+  render();
+}
+async function resetSettings(){
+  MONTHLY_TARGETS = JSON.parse(JSON.stringify(DEFAULT_TARGETS));
+  await saveSettings();
+  renderSettingsForm();
+  render();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT: load from shared storage on page open
+// ═══════════════════════════════════════════════════════════════════════════
+const PRELOAD_PAYLOAD={"MX_SF_ALL":{"Paul Novik":{"All":{"funnel":[6128,950,848,238,211,148],"contact30":89,"contact90":194,"c30":[89,53,47,17,14],"c90":[194,84,72,18,16],"open_counts":[4515,249,156,24,18],"total":6128,"open_total":4515},"Move First":{"funnel":[3916,504,446,116,104,78],"contact30":44,"contact90":91,"c30":[44,26,22,7,6],"c90":[91,43,35,8,8],"open_counts":[3174,140,88,13,10],"total":3916,"open_total":3174},"List with Orchard":{"funnel":[1000,123,105,22,19,13],"contact30":12,"contact90":23,"c30":[12,9,7,3,2],"c90":[23,12,10,3,2],"open_counts":[707,35,18,4,2],"total":1000,"open_total":707},"Buy & List":{"funnel":[580,157,144,36,33,22],"contact30":13,"contact90":33,"c30":[13,8,8,3,2],"c90":[33,17,16,3,2],"open_counts":[267,45,33,3,2],"total":580,"open_total":267},"Buy with Orchard":{"funnel":[218,46,42,20,15,10],"contact30":9,"contact90":12,"c30":[9,5,5,2,2],"c90":[12,6,5,2,2],"open_counts":[86,10,7,2,2],"total":218,"open_total":86},"Buy-only":{"funnel":[282,0,0,0,0,0],"contact30":6,"contact90":29,"c30":[6,0,0,0,0],"c90":[29,0,0,0,0],"open_counts":[260,0,0,0,0],"total":282,"open_total":260},"Website":{"funnel":[93,86,77,29,27,19],"contact30":4,"contact90":5,"c30":[4,4,4,1,1],"c90":[5,5,5,1,1],"open_counts":[17,17,8,1,1],"total":93,"open_total":17},"Sphere of Influence":{"funnel":[23,20,20,7,5,3],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[2,1,1,0,0],"total":23,"open_total":2},"Other":{"funnel":[16,14,14,8,8,3],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[2,1,1,1,1],"total":16,"open_total":2}},"Barbara Holder":{"All":{"funnel":[2974,422,377,81,68,50],"contact30":101,"contact90":275,"c30":[101,52,48,10,8],"c90":[275,107,95,10,8],"open_counts":[2483,218,173,13,10],"total":2974,"open_total":2483},"Move First":{"funnel":[1952,228,198,44,39,30],"contact30":56,"contact90":125,"c30":[56,32,28,6,5],"c90":[125,55,49,6,5],"open_counts":[1720,115,85,6,5],"total":1952,"open_total":1720},"List with Orchard":{"funnel":[368,30,27,2,1,0],"contact30":12,"contact90":26,"c30":[12,4,4,0,0],"c90":[26,7,7,0,0],"open_counts":[285,16,13,0,0],"total":368,"open_total":285},"Buy & List":{"funnel":[195,60,57,15,12,9],"contact30":13,"contact90":30,"c30":[13,8,8,1,0],"c90":[30,17,16,1,0],"open_counts":[115,31,28,2,1],"total":195,"open_total":115},"Buy with Orchard":{"funnel":[56,22,21,4,3,2],"contact30":1,"contact90":7,"c30":[1,1,1,0,0],"c90":[7,5,4,0,0],"open_counts":[21,10,9,0,0],"total":56,"open_total":21},"Buy-only":{"funnel":[316,1,1,0,0,0],"contact30":13,"contact90":65,"c30":[13,1,1,0,0],"c90":[65,1,1,0,0],"open_counts":[295,1,1,0,0],"total":316,"open_total":295},"Website":{"funnel":[68,65,58,9,7,4],"contact30":5,"contact90":20,"c30":[5,5,5,2,2],"c90":[20,20,16,2,2],"open_counts":[39,38,31,3,3],"total":68,"open_total":39},"Sphere of Influence":{"funnel":[10,8,8,5,5,4],"contact30":1,"contact90":2,"c30":[1,1,1,1,1],"c90":[2,2,2,1,1],"open_counts":[3,2,2,1,1],"total":10,"open_total":3},"Other":{"funnel":[9,8,7,2,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[5,5,4,1,0],"total":9,"open_total":5}},"Annette De Los Santos":{"All":{"funnel":[2860,387,302,57,48,29],"contact30":253,"contact90":387,"c30":[253,46,41,8,7],"c90":[387,90,73,8,7],"open_counts":[2346,212,127,9,8],"total":2860,"open_total":2346},"Move First":{"funnel":[1883,193,139,23,22,10],"contact30":57,"contact90":112,"c30":[57,29,26,7,6],"c90":[112,47,39,7,6],"open_counts":[1642,113,59,7,6],"total":1883,"open_total":1642},"List with Orchard":{"funnel":[346,33,28,0,0,0],"contact30":15,"contact90":36,"c30":[15,3,3,0,0],"c90":[36,7,7,0,0],"open_counts":[277,18,13,0,0],"total":346,"open_total":277},"Buy & List":{"funnel":[174,44,39,13,9,4],"contact30":12,"contact90":33,"c30":[12,4,3,0,0],"c90":[33,11,8,0,0],"open_counts":[90,19,14,1,1],"total":174,"open_total":90},"Buy with Orchard":{"funnel":[82,17,14,2,2,1],"contact30":2,"contact90":7,"c30":[2,2,2,1,1],"c90":[7,6,4,1,1],"open_counts":[31,9,6,1,1],"total":82,"open_total":31},"Buy-only":{"funnel":[270,2,2,0,0,0],"contact30":161,"contact90":182,"c30":[161,2,2,0,0],"c90":[182,2,2,0,0],"open_counts":[254,2,2,0,0],"total":270,"open_total":254},"Website":{"funnel":[42,40,27,5,4,3],"contact30":1,"contact90":5,"c30":[1,1,1,0,0],"c90":[5,5,2,0,0],"open_counts":[25,25,12,0,0],"total":42,"open_total":25},"Sphere of Influence":{"funnel":[53,50,48,11,10,10],"contact30":5,"contact90":12,"c30":[5,5,4,0,0],"c90":[12,12,11,0,0],"open_counts":[23,22,20,0,0],"total":53,"open_total":23},"Other":{"funnel":[10,8,5,3,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[4,4,1,0,0],"total":10,"open_total":4}},"Zac Thiel":{"All":{"funnel":[6980,842,728,180,174,122],"contact30":116,"contact90":298,"c30":[116,35,29,9,9],"c90":[298,69,52,9,9],"open_counts":[5883,357,243,18,16],"total":6980,"open_total":5883},"Move First":{"funnel":[4729,488,424,107,104,82],"contact30":60,"contact90":157,"c30":[60,22,18,6,6],"c90":[157,39,30,6,6],"open_counts":[4169,210,146,11,10],"total":4729,"open_total":4169},"List with Orchard":{"funnel":[1024,97,73,3,3,1],"contact30":9,"contact90":47,"c30":[9,4,2,0,0],"c90":[47,10,4,0,0],"open_counts":[874,43,19,0,0],"total":1024,"open_total":874},"Buy & List":{"funnel":[515,103,92,20,20,12],"contact30":8,"contact90":34,"c30":[8,4,4,2,2],"c90":[34,8,8,2,2],"open_counts":[348,42,31,4,4],"total":515,"open_total":348},"Buy with Orchard":{"funnel":[403,54,52,17,16,8],"contact30":2,"contact90":10,"c30":[2,2,2,1,1],"c90":[10,5,5,1,1],"open_counts":[255,19,17,2,2],"total":403,"open_total":255},"Buy-only":{"funnel":[203,2,1,0,0,0],"contact30":34,"contact90":43,"c30":[34,0,0,0,0],"c90":[43,0,0,0,0],"open_counts":[192,1,0,0,0],"total":203,"open_total":192},"Website":{"funnel":[52,50,40,10,9,2],"contact30":2,"contact90":3,"c30":[2,2,2,0,0],"c90":[3,3,2,0,0],"open_counts":[25,25,15,0,0],"total":52,"open_total":25},"Sphere of Influence":{"funnel":[40,39,37,17,17,13],"contact30":1,"contact90":4,"c30":[1,1,1,0,0],"c90":[4,4,3,0,0],"open_counts":[15,14,12,0,0],"total":40,"open_total":15},"Other":{"funnel":[14,9,9,6,5,4],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[5,3,3,1,0],"total":14,"open_total":5}},"Gen Smith":{"All":{"funnel":[130,0,0,0,0,0],"contact30":24,"contact90":25,"c30":[24,0,0,0,0],"c90":[25,0,0,0,0],"open_counts":[124,0,0,0,0],"total":130,"open_total":124},"Move First":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"List with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy & List":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy-only":{"funnel":[130,0,0,0,0,0],"contact30":24,"contact90":25,"c30":[24,0,0,0,0],"c90":[25,0,0,0,0],"open_counts":[124,0,0,0,0],"total":130,"open_total":124},"Website":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Sphere of Influence":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Other":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0}},"Other LO":{"All":{"funnel":[7222,873,778,203,185,150],"contact30":15,"contact90":125,"c30":[15,10,10,1,0],"c90":[125,20,19,1,0],"open_counts":[5591,266,174,2,1],"total":7222,"open_total":5591},"Move First":{"funnel":[4590,472,415,107,98,85],"contact30":8,"contact90":24,"c30":[8,6,6,1,0],"c90":[24,12,11,1,0],"open_counts":[3819,154,97,1,0],"total":4590,"open_total":3819},"List with Orchard":{"funnel":[1199,79,65,6,5,4],"contact30":1,"contact90":4,"c30":[1,0,0,0,0],"c90":[4,1,1,0,0],"open_counts":[989,29,16,0,0],"total":1199,"open_total":989},"Buy & List":{"funnel":[638,110,106,36,35,30],"contact30":2,"contact90":8,"c30":[2,2,2,0,0],"c90":[8,5,5,0,0],"open_counts":[377,27,23,0,0],"total":638,"open_total":377},"Buy with Orchard":{"funnel":[486,62,58,18,16,12],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[242,9,7,0,0],"total":486,"open_total":242},"Buy-only":{"funnel":[112,1,1,0,0,0],"contact30":2,"contact90":87,"c30":[2,0,0,0,0],"c90":[87,0,0,0,0],"open_counts":[103,1,1,0,0],"total":112,"open_total":103},"Website":{"funnel":[136,120,107,25,22,14],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[39,39,26,1,1],"total":136,"open_total":39},"Sphere of Influence":{"funnel":[32,17,17,7,6,3],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[9,3,3,0,0],"total":32,"open_total":9},"Other":{"funnel":[29,12,9,4,3,2],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[13,4,1,0,0],"total":29,"open_total":13}},"All":{"All":{"funnel":[26294,3474,3033,759,686,499],"contact30":598,"contact90":1304,"c30":[598,196,175,45,38],"c90":[1304,370,311,46,40],"open_counts":[20942,1302,873,66,53],"total":26294,"open_total":20942},"Move First":{"funnel":[17070,1885,1622,397,367,285],"contact30":225,"contact90":509,"c30":[225,115,100,27,23],"c90":[509,196,164,28,25],"open_counts":[14524,732,475,38,31],"total":17070,"open_total":14524},"List with Orchard":{"funnel":[3937,362,298,33,28,18],"contact30":49,"contact90":136,"c30":[49,20,16,3,2],"c90":[136,37,29,3,2],"open_counts":[3132,141,79,4,2],"total":3937,"open_total":3132},"Buy & List":{"funnel":[2102,474,438,120,109,77],"contact30":48,"contact90":138,"c30":[48,26,25,6,4],"c90":[138,58,53,6,4],"open_counts":[1197,164,129,10,8],"total":2102,"open_total":1197},"Buy with Orchard":{"funnel":[1245,201,187,61,52,33],"contact30":15,"contact90":37,"c30":[15,11,11,4,4],"c90":[37,23,19,4,4],"open_counts":[635,57,46,5,5],"total":1245,"open_total":635},"Buy-only":{"funnel":[1313,6,5,0,0,0],"contact30":240,"contact90":431,"c30":[240,3,3,0,0],"c90":[431,3,3,0,0],"open_counts":[1228,5,4,0,0],"total":1313,"open_total":1228},"Website":{"funnel":[391,361,309,78,69,42],"contact30":13,"contact90":34,"c30":[13,13,13,3,3],"c90":[34,34,26,3,3],"open_counts":[145,144,92,5,5],"total":391,"open_total":145},"Sphere of Influence":{"funnel":[158,134,130,47,43,33],"contact30":7,"contact90":18,"c30":[7,7,6,1,1],"c90":[18,18,16,1,1],"open_counts":[52,42,38,1,1],"total":158,"open_total":52},"Other":{"funnel":[78,51,44,23,18,11],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[29,17,10,3,1],"total":78,"open_total":29}},"Active LOs":{"All":{"funnel":[19072,2601,2255,556,501,349],"contact30":583,"contact90":1179,"c30":[583,186,165,44,38],"c90":[1179,350,292,45,40],"open_counts":[15351,1036,699,64,52],"total":19072,"open_total":15351},"Move First":{"funnel":[12480,1413,1207,290,269,200],"contact30":217,"contact90":485,"c30":[217,109,94,26,23],"c90":[485,184,153,27,25],"open_counts":[10705,578,378,37,31],"total":12480,"open_total":10705},"List with Orchard":{"funnel":[2738,283,233,27,23,14],"contact30":48,"contact90":132,"c30":[48,20,16,3,2],"c90":[132,36,28,3,2],"open_counts":[2143,112,63,4,2],"total":2738,"open_total":2143},"Buy & List":{"funnel":[1464,364,332,84,74,47],"contact30":46,"contact90":130,"c30":[46,24,23,6,4],"c90":[130,53,48,6,4],"open_counts":[820,137,106,10,8],"total":1464,"open_total":820},"Buy with Orchard":{"funnel":[759,139,129,43,36,21],"contact30":14,"contact90":36,"c30":[14,10,10,4,4],"c90":[36,22,18,4,4],"open_counts":[393,48,39,5,5],"total":759,"open_total":393},"Buy-only":{"funnel":[1201,5,4,0,0,0],"contact30":238,"contact90":344,"c30":[238,3,3,0,0],"c90":[344,3,3,0,0],"open_counts":[1125,4,3,0,0],"total":1201,"open_total":1125},"Website":{"funnel":[255,241,202,53,47,28],"contact30":12,"contact90":33,"c30":[12,12,12,3,3],"c90":[33,33,25,3,3],"open_counts":[106,105,66,4,4],"total":255,"open_total":106},"Sphere of Influence":{"funnel":[126,117,113,40,37,30],"contact30":7,"contact90":18,"c30":[7,7,6,1,1],"c90":[18,18,16,1,1],"open_counts":[43,39,35,1,1],"total":126,"open_total":43},"Other":{"funnel":[49,39,35,19,15,9],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[16,13,9,3,1],"total":49,"open_total":16}}},"MX_SF_2025":{"Paul Novik":{"All":{"funnel":[4235,739,673,178,160,121],"contact30":10,"contact90":27,"c30":[10,6,5,2,2],"c90":[27,17,16,3,3],"open_counts":[2892,142,85,6,3],"total":4235,"open_total":2892},"Move First":{"funnel":[2732,395,358,91,83,71],"contact30":2,"contact90":11,"c30":[2,1,1,0,0],"c90":[11,6,6,1,1],"open_counts":[2105,80,49,3,1],"total":2732,"open_total":2105},"List with Orchard":{"funnel":[773,90,79,16,14,10],"contact30":4,"contact90":5,"c30":[4,2,1,0,0],"c90":[5,3,2,0,0],"open_counts":[535,18,8,1,0],"total":773,"open_total":535},"Buy & List":{"funnel":[470,126,117,23,22,12],"contact30":2,"contact90":9,"c30":[2,2,2,1,1],"c90":[9,7,7,1,1],"open_counts":[195,30,22,1,1],"total":470,"open_total":195},"Buy with Orchard":{"funnel":[161,38,35,16,11,9],"contact30":1,"contact90":1,"c30":[1,0,0,0,0],"c90":[1,0,0,0,0],"open_counts":[45,4,2,0,0],"total":161,"open_total":45},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[63,59,53,20,20,14],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[8,8,2,0,0],"total":63,"open_total":8},"Sphere of Influence":{"funnel":[23,20,20,7,5,3],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[2,1,1,0,0],"total":23,"open_total":2},"Other":{"funnel":[13,11,11,5,5,2],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[2,1,1,1,1],"total":13,"open_total":2}},"Barbara Holder":{"All":{"funnel":[1251,196,180,45,39,34],"contact30":4,"contact90":15,"c30":[4,2,2,0,0],"c90":[15,8,8,0,0],"open_counts":[986,67,51,0,0],"total":1251,"open_total":986},"Move First":{"funnel":[898,107,95,27,25,23],"contact30":3,"contact90":9,"c30":[3,1,1,0,0],"c90":[9,3,3,0,0],"open_counts":[765,38,26,0,0],"total":898,"open_total":765},"List with Orchard":{"funnel":[193,15,14,1,1,0],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[147,6,5,0,0],"total":193,"open_total":147},"Buy & List":{"funnel":[107,31,30,7,5,4],"contact30":0,"contact90":3,"c30":[0,0,0,0,0],"c90":[3,3,3,0,0],"open_counts":[60,13,12,0,0],"total":107,"open_total":60},"Buy with Orchard":{"funnel":[14,8,8,3,2,1],"contact30":0,"contact90":1,"c30":[0,0,0,0,0],"c90":[1,0,0,0,0],"open_counts":[3,1,1,0,0],"total":14,"open_total":3},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[27,25,23,2,1,1],"contact30":0,"contact90":1,"c30":[0,0,0,0,0],"c90":[1,1,1,0,0],"open_counts":[9,8,6,0,0],"total":27,"open_total":9},"Sphere of Influence":{"funnel":[7,6,6,4,4,4],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[1,0,0,0,0],"total":7,"open_total":1},"Other":{"funnel":[5,4,4,1,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[1,1,1,0,0],"total":5,"open_total":1}},"Annette De Los Santos":{"All":{"funnel":[515,118,104,20,18,12],"contact30":5,"contact90":11,"c30":[5,3,3,1,1],"c90":[11,8,8,1,1],"open_counts":[306,46,32,1,1],"total":515,"open_total":306},"Move First":{"funnel":[350,54,46,8,8,3],"contact30":4,"contact90":8,"c30":[4,2,2,1,1],"c90":[8,5,5,1,1],"open_counts":[227,24,16,1,1],"total":350,"open_total":227},"List with Orchard":{"funnel":[77,9,8,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[52,4,3,0,0],"total":77,"open_total":52},"Buy & List":{"funnel":[44,16,15,4,3,2],"contact30":0,"contact90":2,"c30":[0,0,0,0,0],"c90":[2,2,2,0,0],"open_counts":[14,6,5,0,0],"total":44,"open_total":14},"Buy with Orchard":{"funnel":[4,4,3,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[1,1,0,0,0],"total":4,"open_total":1},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[19,17,14,2,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[9,9,6,0,0],"total":19,"open_total":9},"Sphere of Influence":{"funnel":[19,17,17,6,6,6],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[3,2,2,0,0],"total":19,"open_total":3},"Other":{"funnel":[2,1,1,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":2,"open_total":0}},"Zac Thiel":{"All":{"funnel":[4670,587,514,128,123,91],"contact30":6,"contact90":19,"c30":[6,4,2,0,0],"c90":[19,5,3,0,0],"open_counts":[3782,222,149,6,4],"total":4670,"open_total":3782},"Move First":{"funnel":[3132,346,308,75,73,61],"contact30":4,"contact90":11,"c30":[4,2,1,0,0],"c90":[11,3,2,0,0],"open_counts":[2664,137,99,4,3],"total":3132,"open_total":2664},"List with Orchard":{"funnel":[779,75,58,2,2,0],"contact30":1,"contact90":4,"c30":[1,1,0,0,0],"c90":[4,1,0,0,0],"open_counts":[652,31,14,0,0],"total":779,"open_total":652},"Buy & List":{"funnel":[391,70,61,16,16,12],"contact30":1,"contact90":4,"c30":[1,1,1,0,0],"c90":[4,1,1,0,0],"open_counts":[256,22,13,1,1],"total":391,"open_total":256},"Buy with Orchard":{"funnel":[292,28,26,7,6,3],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[183,8,6,0,0],"total":292,"open_total":183},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[36,34,28,9,8,2],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[16,16,10,0,0],"total":36,"open_total":16},"Sphere of Influence":{"funnel":[28,27,26,13,13,9],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[7,6,5,0,0],"total":28,"open_total":7},"Other":{"funnel":[12,7,7,6,5,4],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[4,2,2,1,0],"total":12,"open_total":4}},"Gen Smith":{"All":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Move First":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"List with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy & List":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Sphere of Influence":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Other":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0}},"Other LO":{"All":{"funnel":[6720,837,747,194,177,145],"contact30":12,"contact90":33,"c30":[12,9,9,1,0],"c90":[33,19,18,1,0],"open_counts":[5142,255,168,1,0],"total":6720,"open_total":5142},"Move First":{"funnel":[4310,460,404,103,94,82],"contact30":8,"contact90":22,"c30":[8,6,6,1,0],"c90":[22,12,11,1,0],"open_counts":[3560,152,96,1,0],"total":4310,"open_total":3560},"List with Orchard":{"funnel":[1123,75,63,6,5,4],"contact30":1,"contact90":2,"c30":[1,0,0,0,0],"c90":[2,1,1,0,0],"open_counts":[918,27,16,0,0],"total":1123,"open_total":918},"Buy & List":{"funnel":[629,108,104,35,34,29],"contact30":2,"contact90":8,"c30":[2,2,2,0,0],"c90":[8,5,5,0,0],"open_counts":[371,27,23,0,0],"total":629,"open_total":371},"Buy with Orchard":{"funnel":[478,56,52,16,14,11],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[242,9,7,0,0],"total":478,"open_total":242},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[125,111,100,24,21,14],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[33,33,22,0,0],"total":125,"open_total":33},"Sphere of Influence":{"funnel":[32,17,17,7,6,3],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[9,3,3,0,0],"total":32,"open_total":9},"Other":{"funnel":[23,10,7,3,3,2],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[9,4,1,0,0],"total":23,"open_total":9}},"All":{"All":{"funnel":[17391,2477,2218,565,517,403],"contact30":37,"contact90":105,"c30":[37,24,21,4,3],"c90":[105,57,53,5,4],"open_counts":[13108,732,485,14,8],"total":17391,"open_total":13108},"Move First":{"funnel":[11422,1362,1211,304,283,240],"contact30":21,"contact90":61,"c30":[21,12,11,2,1],"c90":[61,29,27,3,2],"open_counts":[9321,431,286,9,5],"total":11422,"open_total":9321},"List with Orchard":{"funnel":[2945,264,222,25,22,14],"contact30":7,"contact90":12,"c30":[7,4,2,0,0],"c90":[12,6,4,0,0],"open_counts":[2304,86,46,1,0],"total":2945,"open_total":2304},"Buy & List":{"funnel":[1641,351,327,85,80,59],"contact30":5,"contact90":26,"c30":[5,5,5,1,1],"c90":[26,18,18,1,1],"open_counts":[896,98,75,2,2],"total":1641,"open_total":896},"Buy with Orchard":{"funnel":[949,134,124,42,33,24],"contact30":2,"contact90":3,"c30":[2,1,1,0,0],"c90":[3,1,1,0,0],"open_counts":[474,23,16,0,0],"total":949,"open_total":474},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[270,246,218,57,51,32],"contact30":0,"contact90":1,"c30":[0,0,0,0,0],"c90":[1,1,1,0,0],"open_counts":[75,74,46,0,0],"total":270,"open_total":75},"Sphere of Influence":{"funnel":[109,87,86,37,34,25],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[22,12,11,0,0],"total":109,"open_total":22},"Other":{"funnel":[55,33,30,15,14,9],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[16,8,5,2,1],"total":55,"open_total":16}},"Active LOs":{"All":{"funnel":[10671,1640,1471,371,340,258],"contact30":25,"contact90":72,"c30":[25,15,12,3,3],"c90":[72,38,35,4,4],"open_counts":[7966,477,317,13,8],"total":10671,"open_total":7966},"Move First":{"funnel":[7112,902,807,201,189,158],"contact30":13,"contact90":39,"c30":[13,6,5,1,1],"c90":[39,17,16,2,2],"open_counts":[5761,279,190,8,5],"total":7112,"open_total":5761},"List with Orchard":{"funnel":[1822,189,159,19,17,10],"contact30":6,"contact90":10,"c30":[6,4,2,0,0],"c90":[10,5,3,0,0],"open_counts":[1386,59,30,1,0],"total":1822,"open_total":1386},"Buy & List":{"funnel":[1012,243,223,50,46,30],"contact30":3,"contact90":18,"c30":[3,3,3,1,1],"c90":[18,13,13,1,1],"open_counts":[525,71,52,2,2],"total":1012,"open_total":525},"Buy with Orchard":{"funnel":[471,78,72,26,19,13],"contact30":1,"contact90":2,"c30":[1,0,0,0,0],"c90":[2,0,0,0,0],"open_counts":[232,14,9,0,0],"total":471,"open_total":232},"Buy-only":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Website":{"funnel":[145,135,118,33,30,18],"contact30":0,"contact90":1,"c30":[0,0,0,0,0],"c90":[1,1,1,0,0],"open_counts":[42,41,24,0,0],"total":145,"open_total":42},"Sphere of Influence":{"funnel":[77,70,69,30,28,22],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[13,9,8,0,0],"total":77,"open_total":13},"Other":{"funnel":[32,23,23,12,11,7],"contact30":1,"contact90":1,"c30":[1,1,1,1,1],"c90":[1,1,1,1,1],"open_counts":[7,4,4,2,1],"total":32,"open_total":7}}},"MX_SF_2026":{"Paul Novik":{"All":{"funnel":[1893,211,175,60,51,27],"contact30":79,"contact90":167,"c30":[79,47,42,15,12],"c90":[167,67,56,15,13],"open_counts":[1623,107,71,18,15],"total":1893,"open_total":1623},"Move First":{"funnel":[1184,109,88,25,21,7],"contact30":42,"contact90":80,"c30":[42,25,21,7,6],"c90":[80,37,29,7,7],"open_counts":[1069,60,39,10,9],"total":1184,"open_total":1069},"List with Orchard":{"funnel":[227,33,26,6,5,3],"contact30":8,"contact90":18,"c30":[8,7,6,3,2],"c90":[18,9,8,3,2],"open_counts":[172,17,10,3,2],"total":227,"open_total":172},"Buy & List":{"funnel":[110,31,27,13,11,10],"contact30":11,"contact90":24,"c30":[11,6,6,2,1],"c90":[24,10,9,2,1],"open_counts":[72,15,11,2,1],"total":110,"open_total":72},"Buy with Orchard":{"funnel":[57,8,7,4,4,1],"contact30":8,"contact90":11,"c30":[8,5,5,2,2],"c90":[11,6,5,2,2],"open_counts":[41,6,5,2,2],"total":57,"open_total":41},"Buy-only":{"funnel":[282,0,0,0,0,0],"contact30":6,"contact90":29,"c30":[6,0,0,0,0],"c90":[29,0,0,0,0],"open_counts":[260,0,0,0,0],"total":282,"open_total":260},"Website":{"funnel":[30,27,24,9,7,5],"contact30":4,"contact90":5,"c30":[4,4,4,1,1],"c90":[5,5,5,1,1],"open_counts":[9,9,6,1,1],"total":30,"open_total":9},"Sphere of Influence":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Other":{"funnel":[3,3,3,3,3,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":3,"open_total":0}},"Barbara Holder":{"All":{"funnel":[1723,226,197,36,29,16],"contact30":97,"contact90":260,"c30":[97,50,46,10,8],"c90":[260,99,87,10,8],"open_counts":[1497,151,122,13,10],"total":1723,"open_total":1497},"Move First":{"funnel":[1054,121,103,17,14,7],"contact30":53,"contact90":116,"c30":[53,31,27,6,5],"c90":[116,52,46,6,5],"open_counts":[955,77,59,6,5],"total":1054,"open_total":955},"List with Orchard":{"funnel":[175,15,13,1,0,0],"contact30":11,"contact90":25,"c30":[11,3,3,0,0],"c90":[25,6,6,0,0],"open_counts":[138,10,8,0,0],"total":175,"open_total":138},"Buy & List":{"funnel":[88,29,27,8,7,5],"contact30":13,"contact90":27,"c30":[13,8,8,1,0],"c90":[27,14,13,1,0],"open_counts":[55,18,16,2,1],"total":88,"open_total":55},"Buy with Orchard":{"funnel":[42,14,13,1,1,1],"contact30":1,"contact90":6,"c30":[1,1,1,0,0],"c90":[6,5,4,0,0],"open_counts":[18,9,8,0,0],"total":42,"open_total":18},"Buy-only":{"funnel":[316,1,1,0,0,0],"contact30":13,"contact90":65,"c30":[13,1,1,0,0],"c90":[65,1,1,0,0],"open_counts":[295,1,1,0,0],"total":316,"open_total":295},"Website":{"funnel":[41,40,35,7,6,3],"contact30":5,"contact90":19,"c30":[5,5,5,2,2],"c90":[19,19,15,2,2],"open_counts":[30,30,25,3,3],"total":41,"open_total":30},"Sphere of Influence":{"funnel":[3,2,2,1,1,0],"contact30":1,"contact90":2,"c30":[1,1,1,1,1],"c90":[2,2,2,1,1],"open_counts":[2,2,2,1,1],"total":3,"open_total":2},"Other":{"funnel":[4,4,3,1,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[4,4,3,1,0],"total":4,"open_total":4}},"Annette De Los Santos":{"All":{"funnel":[2345,269,198,37,30,17],"contact30":248,"contact90":376,"c30":[248,43,38,7,6],"c90":[376,82,65,7,6],"open_counts":[2040,166,95,8,7],"total":2345,"open_total":2040},"Move First":{"funnel":[1533,139,93,15,14,7],"contact30":53,"contact90":104,"c30":[53,27,24,6,5],"c90":[104,42,34,6,5],"open_counts":[1415,89,43,6,5],"total":1533,"open_total":1415},"List with Orchard":{"funnel":[269,24,20,0,0,0],"contact30":15,"contact90":36,"c30":[15,3,3,0,0],"c90":[36,7,7,0,0],"open_counts":[225,14,10,0,0],"total":269,"open_total":225},"Buy & List":{"funnel":[130,28,24,9,6,2],"contact30":12,"contact90":31,"c30":[12,4,3,0,0],"c90":[31,9,6,0,0],"open_counts":[76,13,9,1,1],"total":130,"open_total":76},"Buy with Orchard":{"funnel":[78,13,11,2,2,1],"contact30":2,"contact90":7,"c30":[2,2,2,1,1],"c90":[7,6,4,1,1],"open_counts":[30,8,6,1,1],"total":78,"open_total":30},"Buy-only":{"funnel":[270,2,2,0,0,0],"contact30":161,"contact90":182,"c30":[161,2,2,0,0],"c90":[182,2,2,0,0],"open_counts":[254,2,2,0,0],"total":270,"open_total":254},"Website":{"funnel":[23,23,13,3,3,2],"contact30":1,"contact90":5,"c30":[1,1,1,0,0],"c90":[5,5,2,0,0],"open_counts":[16,16,6,0,0],"total":23,"open_total":16},"Sphere of Influence":{"funnel":[34,33,31,5,4,4],"contact30":4,"contact90":11,"c30":[4,4,3,0,0],"c90":[11,11,10,0,0],"open_counts":[20,20,18,0,0],"total":34,"open_total":20},"Other":{"funnel":[8,7,4,3,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[4,4,1,0,0],"total":8,"open_total":4}},"Zac Thiel":{"All":{"funnel":[2310,255,214,52,51,31],"contact30":110,"contact90":279,"c30":[110,31,27,9,9],"c90":[279,64,49,9,9],"open_counts":[2101,135,94,12,12],"total":2310,"open_total":2101},"Move First":{"funnel":[1597,142,116,32,31,21],"contact30":56,"contact90":146,"c30":[56,20,17,6,6],"c90":[146,36,28,6,6],"open_counts":[1505,73,47,7,7],"total":1597,"open_total":1505},"List with Orchard":{"funnel":[245,22,15,1,1,1],"contact30":8,"contact90":43,"c30":[8,3,2,0,0],"c90":[43,9,4,0,0],"open_counts":[222,12,5,0,0],"total":245,"open_total":222},"Buy & List":{"funnel":[124,33,31,4,4,0],"contact30":7,"contact90":30,"c30":[7,3,3,2,2],"c90":[30,7,7,2,2],"open_counts":[92,20,18,3,3],"total":124,"open_total":92},"Buy with Orchard":{"funnel":[111,26,26,10,10,5],"contact30":2,"contact90":10,"c30":[2,2,2,1,1],"c90":[10,5,5,1,1],"open_counts":[72,11,11,2,2],"total":111,"open_total":72},"Buy-only":{"funnel":[203,2,1,0,0,0],"contact30":34,"contact90":43,"c30":[34,0,0,0,0],"c90":[43,0,0,0,0],"open_counts":[192,1,0,0,0],"total":203,"open_total":192},"Website":{"funnel":[16,16,12,1,1,0],"contact30":2,"contact90":3,"c30":[2,2,2,0,0],"c90":[3,3,2,0,0],"open_counts":[9,9,5,0,0],"total":16,"open_total":9},"Sphere of Influence":{"funnel":[12,12,11,4,4,4],"contact30":1,"contact90":4,"c30":[1,1,1,0,0],"c90":[4,4,3,0,0],"open_counts":[8,8,7,0,0],"total":12,"open_total":8},"Other":{"funnel":[2,2,2,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[1,1,1,0,0],"total":2,"open_total":1}},"Gen Smith":{"All":{"funnel":[130,0,0,0,0,0],"contact30":24,"contact90":25,"c30":[24,0,0,0,0],"c90":[25,0,0,0,0],"open_counts":[124,0,0,0,0],"total":130,"open_total":124},"Move First":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"List with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy & List":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy with Orchard":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Buy-only":{"funnel":[130,0,0,0,0,0],"contact30":24,"contact90":25,"c30":[24,0,0,0,0],"c90":[25,0,0,0,0],"open_counts":[124,0,0,0,0],"total":130,"open_total":124},"Website":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Sphere of Influence":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Other":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0}},"Other LO":{"All":{"funnel":[502,36,31,9,8,5],"contact30":3,"contact90":92,"c30":[3,1,1,0,0],"c90":[92,1,1,0,0],"open_counts":[449,11,6,1,1],"total":502,"open_total":449},"Move First":{"funnel":[280,12,11,4,4,3],"contact30":0,"contact90":2,"c30":[0,0,0,0,0],"c90":[2,0,0,0,0],"open_counts":[259,2,1,0,0],"total":280,"open_total":259},"List with Orchard":{"funnel":[76,4,2,0,0,0],"contact30":0,"contact90":2,"c30":[0,0,0,0,0],"c90":[2,0,0,0,0],"open_counts":[71,2,0,0,0],"total":76,"open_total":71},"Buy & List":{"funnel":[9,2,2,1,1,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[6,0,0,0,0],"total":9,"open_total":6},"Buy with Orchard":{"funnel":[8,6,6,2,2,1],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":8,"open_total":0},"Buy-only":{"funnel":[112,1,1,0,0,0],"contact30":2,"contact90":87,"c30":[2,0,0,0,0],"c90":[87,0,0,0,0],"open_counts":[103,1,1,0,0],"total":112,"open_total":103},"Website":{"funnel":[11,9,7,1,1,0],"contact30":1,"contact90":1,"c30":[1,1,1,0,0],"c90":[1,1,1,0,0],"open_counts":[6,6,4,1,1],"total":11,"open_total":6},"Sphere of Influence":{"funnel":[0,0,0,0,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[0,0,0,0,0],"total":0,"open_total":0},"Other":{"funnel":[6,2,2,1,0,0],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[4,0,0,0,0],"total":6,"open_total":4}},"All":{"All":{"funnel":[8903,997,815,194,169,96],"contact30":561,"contact90":1199,"c30":[561,172,154,41,35],"c90":[1199,313,258,41,36],"open_counts":[7834,570,388,52,45],"total":8903,"open_total":7834},"Move First":{"funnel":[5648,523,411,93,84,45],"contact30":204,"contact90":448,"c30":[204,103,89,25,22],"c90":[448,167,137,25,23],"open_counts":[5203,301,189,29,26],"total":5648,"open_total":5203},"List with Orchard":{"funnel":[992,98,76,8,6,4],"contact30":42,"contact90":124,"c30":[42,16,14,3,2],"c90":[124,31,25,3,2],"open_counts":[828,55,33,3,2],"total":992,"open_total":828},"Buy & List":{"funnel":[461,123,111,35,29,18],"contact30":43,"contact90":112,"c30":[43,21,20,5,3],"c90":[112,40,35,5,3],"open_counts":[301,66,54,8,6],"total":461,"open_total":301},"Buy with Orchard":{"funnel":[296,67,63,19,19,9],"contact30":13,"contact90":34,"c30":[13,10,10,4,4],"c90":[34,22,18,4,4],"open_counts":[161,34,30,5,5],"total":296,"open_total":161},"Buy-only":{"funnel":[1313,6,5,0,0,0],"contact30":240,"contact90":431,"c30":[240,3,3,0,0],"c90":[431,3,3,0,0],"open_counts":[1228,5,4,0,0],"total":1313,"open_total":1228},"Website":{"funnel":[121,115,91,21,18,10],"contact30":13,"contact90":33,"c30":[13,13,13,3,3],"c90":[33,33,25,3,3],"open_counts":[70,70,46,5,5],"total":121,"open_total":70},"Sphere of Influence":{"funnel":[49,47,44,10,9,8],"contact30":6,"contact90":17,"c30":[6,6,5,1,1],"c90":[17,17,15,1,1],"open_counts":[30,30,27,1,1],"total":49,"open_total":30},"Other":{"funnel":[23,18,14,8,4,2],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[13,9,5,1,0],"total":23,"open_total":13}},"Active LOs":{"All":{"funnel":[8401,961,784,185,161,91],"contact30":558,"contact90":1107,"c30":[558,171,153,41,35],"c90":[1107,312,257,41,36],"open_counts":[7385,559,382,51,44],"total":8401,"open_total":7385},"Move First":{"funnel":[5368,511,400,89,80,42],"contact30":204,"contact90":446,"c30":[204,103,89,25,22],"c90":[446,167,137,25,23],"open_counts":[4944,299,188,29,26],"total":5368,"open_total":4944},"List with Orchard":{"funnel":[916,94,74,8,6,4],"contact30":42,"contact90":122,"c30":[42,16,14,3,2],"c90":[122,31,25,3,2],"open_counts":[757,53,33,3,2],"total":916,"open_total":757},"Buy & List":{"funnel":[452,121,109,34,28,17],"contact30":43,"contact90":112,"c30":[43,21,20,5,3],"c90":[112,40,35,5,3],"open_counts":[295,66,54,8,6],"total":452,"open_total":295},"Buy with Orchard":{"funnel":[288,61,57,17,17,8],"contact30":13,"contact90":34,"c30":[13,10,10,4,4],"c90":[34,22,18,4,4],"open_counts":[161,34,30,5,5],"total":288,"open_total":161},"Buy-only":{"funnel":[1201,5,4,0,0,0],"contact30":238,"contact90":344,"c30":[238,3,3,0,0],"c90":[344,3,3,0,0],"open_counts":[1125,4,3,0,0],"total":1201,"open_total":1125},"Website":{"funnel":[110,106,84,20,17,10],"contact30":12,"contact90":32,"c30":[12,12,12,3,3],"c90":[32,32,24,3,3],"open_counts":[64,64,42,4,4],"total":110,"open_total":64},"Sphere of Influence":{"funnel":[49,47,44,10,9,8],"contact30":6,"contact90":17,"c30":[6,6,5,1,1],"c90":[17,17,15,1,1],"open_counts":[30,30,27,1,1],"total":49,"open_total":30},"Other":{"funnel":[17,16,12,7,4,2],"contact30":0,"contact90":0,"c30":[0,0,0,0,0],"c90":[0,0,0,0,0],"open_counts":[9,9,5,1,0],"total":17,"open_total":9}}},"MX_BYTE_ALL":{"Paul Novik":{"All":{"funnel":[817,315,276,171],"total":817}},"Barbara Holder":{"All":{"funnel":[555,119,95,61],"total":555}},"Annette De Los Santos":{"All":{"funnel":[513,73,61,37],"total":513}},"Zac Thiel":{"All":{"funnel":[664,229,223,144],"total":664}},"Gen Smith":{"All":{"funnel":[0,0,0,0],"total":0}},"Other LO":{"All":{"funnel":[1118,315,264,168],"total":1118}},"All":{"All":{"funnel":[3667,1051,919,581],"total":3667}},"Active LOs":{"All":{"funnel":[2549,736,655,413],"total":2549}}},"MX_BYTE_2025":{"Paul Novik":{"All":{"funnel":[600,229,204,137],"total":600}},"Barbara Holder":{"All":{"funnel":[315,60,46,39],"total":315}},"Annette De Los Santos":{"All":{"funnel":[253,30,26,19],"total":253}},"Zac Thiel":{"All":{"funnel":[401,153,148,102],"total":401}},"Gen Smith":{"All":{"funnel":[0,0,0,0],"total":0}},"Other LO":{"All":{"funnel":[1055,299,252,162],"total":1055}},"All":{"All":{"funnel":[2624,771,676,459],"total":2624}},"Active LOs":{"All":{"funnel":[1569,472,424,297],"total":1569}}},"MX_BYTE_2026":{"Paul Novik":{"All":{"funnel":[217,86,72,34],"total":217}},"Barbara Holder":{"All":{"funnel":[240,59,49,22],"total":240}},"Annette De Los Santos":{"All":{"funnel":[260,43,35,18],"total":260}},"Zac Thiel":{"All":{"funnel":[263,76,75,42],"total":263}},"Gen Smith":{"All":{"funnel":[0,0,0,0],"total":0}},"Other LO":{"All":{"funnel":[63,16,12,6],"total":63}},"All":{"All":{"funnel":[1043,280,243,122],"total":1043}},"Active LOs":{"All":{"funnel":[980,264,231,116],"total":980}}},"MDATA":{"Paul Novik":[459,396,401,338,326,522,568,397,265,225,159,179,252,220,450,453,518],"Barbara Holder":[0,0,0,0,0,0,0,321,281,247,227,175,239,269,441,382,392],"Annette De Los Santos":[0,0,0,0,0,0,0,0,88,165,120,142,275,363,485,613,609],"Zac Thiel":[422,402,407,459,444,338,316,480,465,354,306,277,356,383,462,587,522],"Gen Smith":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,130],"Other LO":[709,833,923,956,836,684,578,283,258,244,211,205,184,111,26,133,48]},"MONTHS":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"],"MLB":{"2025-01":"Jan '25","2025-02":"Feb","2025-03":"Mar","2025-04":"Apr","2025-05":"May","2025-06":"Jun","2025-07":"Jul","2025-08":"Aug","2025-09":"Sep","2025-10":"Oct","2025-11":"Nov","2025-12":"Dec","2026-01":"Jan '26","2026-02":"Feb","2026-03":"Mar","2026-04":"Apr","2026-05":"May*"},"MONTHS_2025":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12"],"MONTHS_2026":["2026-01","2026-02","2026-03","2026-04","2026-05"],"L2F_RATES":{"All":66.9,"2025":67.9,"2026":63.5},"SEASONING_2025":97,"SEASONING_2026":48,"MONTHS_MAP":{"All":{"Paul Novik":16.8,"Barbara Holder":9.9,"Annette De Los Santos":8.8,"Zac Thiel":16.8,"Gen Smith":0.5,"Other LO":16.8,"All":16.8,"Active LOs":16.8},"2025":{"Paul Novik":12.0,"Barbara Holder":5.0,"Annette De Los Santos":4.0,"Zac Thiel":12.0,"Gen Smith":0,"Other LO":12.0,"All":12.0,"Active LOs":12.0},"2026":{"Paul Novik":4.8,"Barbara Holder":4.8,"Annette De Los Santos":4.8,"Zac Thiel":4.8,"Gen Smith":4.8,"Other LO":4.8,"All":4.8,"Active LOs":4.8}},"GAP_RECORDS":[],"GAP_SUMMARY":{},"OTHER_TOOLTIP":"Includes: Orchard Brokerage (63), Listings (7), Mortgage Entrypoint (6), No Fee Refinance (2).","DATA_DATE":"May 28, 2026","DEFAULT_TARGETS":{"0":{"Paul Novik":400,"Barbara Holder":400,"Annette De Los Santos":400,"Zac Thiel":400,"Gen Smith":400,"Active LOs":2000,"All":2000},"1":{"Paul Novik":63,"Barbara Holder":63,"Annette De Los Santos":63,"Zac Thiel":63,"Gen Smith":63,"Active LOs":300,"All":300},"3":{"Paul Novik":24,"Barbara Holder":24,"Annette De Los Santos":24,"Zac Thiel":24,"Gen Smith":24,"Active LOs":121,"All":121}}};
+async function init(){
+  await loadSettings();
+  const saved = await storageLoad('dashboard_data', true);
+  if(saved){
+    applyPayload(saved);
+  } else {
+    // No Worker data yet (or Worker URL not set) — use preloaded May 28 data
+    applyPayload(PRELOAD_PAYLOAD);
+  }
+}
+
+
+function setYr(y){S.yr=y;S.sel=[];render();}
+function setSrc(v){S.src=v;S.sel=[];render();}
+function render(){rFilters();rTabs();if(S.tab==="funnel")rFunnel();if(S.tab==="trend")rTrend();if(S.tab==="buckets")rBuckets();}
+
+function rFilters(){
+  document.getElementById("srcp").innerHTML=[
+    {k:"sf",  l:"SF-Led",   c:"#4a9eff", tip:"Salesforce OM Opportunity required · Full funnel"},
+    {k:"byte",l:"Byte-Led", c:"#34d399", tip:"All Byte files · App Complete → Funded"},
+  ].map(({k,l,c,tip})=>{
+    const a=S.src===k;
+    const st=a?`style="color:${c};border-color:${c}66;background:${c}12"`:"";
+    return`<button class="pill" ${st} title="${tip}" onclick="setSrc('${k}')">${l}</button>`;
+  }).join("");
+  document.getElementById("yrp").innerHTML=["All","2025","2026"].map(y=>{
+    const a=S.yr===y;
+    const col=y==="2026"?"#f87171":y==="2025"?"#34d399":"#94b4d4";
+    const st=a?`style="color:${col};border-color:${col}66;background:${col}12"`:"";
+    return`<button class="pill" ${st} onclick="setYr('${y}')">${y==="All"?"All Years":y}</button>`;
+  }).join("");
+  document.getElementById("lop").innerHTML=LOS.map(l=>{
+    const a=S.lo===l;const c=LOCS_[l]||"#94b4d4";
+    const st=a?`style="color:${c};border-color:${c}66;background:${c}12"`:"";
+    const lbl=l==="Annette De Los Santos"?"Annette":l==="Active LOs"?"Active LOs":l==="All"?"All LOs":l==="Other LO"?"Other LO":l.split(" ")[0];
+    return '<button class="pill" '+st+' data-lo="'+l.replace(/"/g,'&quot;')+'" onclick="setLO(this.dataset.lo)">'+lbl+'</button>';
+  }).join("");
+  document.getElementById("bktp").innerHTML=BUCKETS.map(b=>{
+    const a=S.bkt===b;const c=b==="All"?"#94b4d4":BC[b];
+    const tip=b==="Other"?' title="'+OTHER_TOOLTIP+'"':'';
+    const st=a?`style="color:${c};border-color:${c}66;background:${c}12"`:"";
+    return`<button class="pill" ${st}${tip} onclick="setBkt('${b.replace(/'/g,"\\'")}')"> ${BSH[b]}</button>`;
+  }).join("");
+  document.getElementById("cwp").innerHTML=[30,90].map(w=>{
+    const a=S.cw===w;const st=a?`style="color:#67e8f9;border-color:#0e749066;background:#0e749022"`:"";
+    return`<button class="pill" ${st} onclick="setCW(${w})">${w}d</button>`;
+  }).join("");
+  renderSeasoningBanner();
+}
+
+function rTabs(){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===S.tab));
+  ["funnel","trend","buckets"].forEach(t=>document.getElementById("tab-"+t).style.display=S.tab===t?"":"none");
+  const showSrc=S.tab==="funnel"&&S.src==="sf";
+  document.getElementById("src-filter").style.display=showSrc?"":"none";
+  document.getElementById("src-divider").style.display=showSrc?"":"none";
+  const cwGroup=document.getElementById("cw-group");
+  if(cwGroup)cwGroup.style.display=S.src==="byte"?"none":"";
+}
+
+function exportGapCSV(){
+  const cols=['file','borrower','lo','status','designation','created','app_date','lock_date','funded_date'];
+  const headers=['Byte File #','Borrower Name','Loan Officer','Byte Status','Designation','Date Created','Application Date','Lock Date','Funded Date'];
+  const rows=[headers.join(',')];
+  GAP_RECORDS.forEach(r=>{
+    const row=cols.map(c=>{
+      const v=r[c]===undefined||r[c]===null?'':String(r[c]);
+      return v.includes(',')?'"'+v.replace(/"/g,'""')+'"':v;
+    });
+    rows.push(row.join(','));
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='Byte_SF_Gap_Records.csv';a.click();
+}
+
+function renderSeasoningBanner(){
+  const banner=document.getElementById("seas-banner");
+  if(!banner)return;
+  const seas=getActiveSeasoning();
+  if(S.yr==="2026"){
+    banner.style.display="";
+    banner.innerHTML=`<div style="margin-bottom:14px;padding:12px 16px;border-radius:7px;background:#2d1a0022;border:2px solid #f8730066;display:flex;align-items:center;gap:14px"><div style="font-size:22px">⚠️</div><div><div style="font-size:13px;font-weight:600;color:#fb923c;margin-bottom:3px">2026 COHORT — FUNDED DATA IS ${seas.toFixed(0)}% SEASONED</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Most 2026 leads have not had enough time to complete the full funnel. Funded counts are <strong style="color:#fb923c">significantly understated</strong> — especially for Mar–May 2026 cohorts. Lock is the more reliable conversion endpoint for this view.</div></div></div>`;
+  } else if(S.yr==="All"){
+    const overall=getOverallSeasoning();
+    if(overall<90){
+      banner.style.display="";
+      banner.innerHTML=`<div style="margin-bottom:14px;padding:10px 16px;border-radius:7px;background:#1a140022;border:1px solid #f5c84244;display:flex;align-items:center;gap:12px"><div style="font-size:18px">ℹ️</div><div style="font-size:12px;color:var(--muted);line-height:1.5"><span style="color:#fbbf24;font-weight:600">All Years view: ${overall.toFixed(0)}% overall seasoning.</span> Recent 2026 cohorts are pulling down funded conversion rates. Switch to <strong>2025 only</strong> for fully matured data, or <strong>use Lock as your conversion benchmark</strong> for current performance.</div></div>`;
+    } else { banner.style.display="none"; }
+  } else { banner.style.display="none"; }
+}
+
+function rFunnel(){
+  const isByte = S.src==="byte";
+  // In Byte mode funnel = [AppComplete, TRID, Lock, Funded]
+  // Map to 6 display positions: Lead(0), AppStarted(1) are N/A in Byte mode
+  const d = gdBkt();
+  const rawF = d.funnel;
+  // Build a 6-element display array; Byte mode slots into positions 2-5
+  const f = isByte
+    ? [null, null, rawF[0], rawF[1], rawF[2], rawF[3]]
+    : rawF;
+  const sel=[...S.sel].sort((a,b)=>a-b);
+
+  // ── Render summary stats FIRST so they don't move when detail panel opens ──
+  const _sc30s=d.c30||[d.contact30];const _sc90s=d.c90||[d.contact90];
+  const _soc=d.open_counts||[d.open_total];
+  const cr30n=S.cw===30?(_sc30s[0]||0):(_sc90s[0]||0);
+  const cr30=_soc[0]>0?cr30n/_soc[0]*100:0;
+  const l2f = getL2F();
+  const tridNote = "Excl. bridge & seconds · Co. rate ~46% due to bridge loans in denominator";
+  if(isByte){
+    document.getElementById("sstats").innerHTML=[
+      {l:"APP COMPLETE → FUNDED",v:pc(f[5],f[2]),s:"Byte-led full conversion",c:"#a78bfa"},
+      {l:"TRID → LOCK",v:pc(f[4],f[3]),s:tridNote,c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
+      {l:"TOTAL APP COMPLETES",v:fmt(f[2]),s:"All Byte files (excl bridge/seconds)",c:"#34d399"},
+      {l:"LOCK → FUNDED",v:l2f.toFixed(1)+"%",s:"Byte resolved loans · target 75%",c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
+    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
+    // Gap note
+    const gapFunded  = GAP_SUMMARY["Funded - No SF Record"] || 0;
+    const gapActive  = GAP_SUMMARY["Active Pipeline - No SF Record"] || 0;
+    const gapStarted = GAP_SUMMARY["Started - No SF Record"] || 0;
+    const gapDupe    = GAP_SUMMARY["Orphaned Dupe"] || 0;
+    const gapOther   = GAP_SUMMARY["Withdrawn/Denied - No SF Record"] || 0;
+    const gapTotal   = gapFunded + gapActive + gapStarted + gapDupe + gapOther;
+    document.getElementById("gap-note").style.display="";
+    document.getElementById("gap-note").innerHTML=`
+      <div style="background:#0c1220;border:1px solid #f97316aa;border-radius:8px;padding:16px 18px;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:280px">
+            <div style="font-size:12px;font-weight:600;color:#fb923c;letter-spacing:.06em;margin-bottom:8px">
+              ⚠ BYTE ↔ SALESFORCE GAP — ${gapTotal} UNRECONCILED FILES
+            </div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.7">
+              Of ${fmt(f[2])} Byte files, ${gapTotal} have no matching SF opportunity by file number or borrower name.
+              Per system design every Byte file should have an SF opp — unmatched files represent a Salesforce data gap.
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+              ${[
+                {l:"Funded / Purchased",  v:gapFunded,  c:"#f87171"},
+                {l:"Active Pipeline",     v:gapActive,  c:"#fbbf24"},
+                {l:"Started (no TRID)",   v:gapStarted, c:"#94a3b8"},
+                {l:"Orphaned Dupe",       v:gapDupe,    c:"#6b7280"},
+                {l:"Withdrawn / Denied",  v:gapOther,   c:"#475569"},
+              ].map(x=>`<div style="font-size:11px"><span style="color:${x.c};font-weight:600">${x.v}</span> <span style="color:var(--muted2)">${x.l}</span></div>`).join("")}
+            </div>
+          </div>
+          <button onclick="exportGapCSV()"
+            style="font-family:var(--font);font-size:11px;padding:8px 14px;border-radius:4px;border:1px solid #f9731666;background:#f9731611;color:#fb923c;cursor:pointer;white-space:nowrap;flex-shrink:0"
+            onmouseover="this.style.background='#f9731622'" onmouseout="this.style.background='#f9731611'">
+            ↓ Export ${gapTotal} Records (CSV)
+          </button>
+        </div>
+      </div>`;
+  } else {
+    document.getElementById("gap-note").style.display="none";
+    const crLabel = `CONTACT RATE (${S.cw}D)`;
+    const crVal   = cr30.toFixed(0)+"%";
+    const crSub   = `${fmt(d[S.cw===30?"contact30":"contact90"])} of ${fmt(d.open_total)} open leads`;
+    const crCol   = cr30>=20?"var(--green)":cr30>=10?"var(--yellow)":"var(--red)";
+    document.getElementById("sstats").innerHTML=[
+      {l:"LEAD → FUNDED",   v:pc(f[5],f[0]),        s:"Overall conversion",                    c:"#a78bfa"},
+      {l:"TRID → LOCK",     v:pc(f[4],f[3]),        s:tridNote,                                c:f[3]>0&&f[4]/f[3]>=.9?"var(--green)":"var(--yellow)"},
+      {l:crLabel,           v:crVal,                 s:crSub,                                   c:crCol},
+      {l:"LOCK → FUNDED",   v:l2f.toFixed(1)+"%",   s:"Byte resolved loans · target 75%",      c:l2f>=75?"var(--green)":l2f>=65?"var(--yellow)":"var(--red)"},
+    ].map(s=>`<div class="sb"><div class="sbl">${s.l}</div><div class="sbv" style="color:${s.c}">${s.v}</div><div class="sbs">${s.s}</div></div>`).join("");
+  }
+
+  document.getElementById("fcards").innerHTML=STAGES.map((s,i)=>{
+    const cnt = f[i];
+    const isNA = cnt === null;
+    // For Byte mode, base conversions on AppComplete (index 2)
+    const baseIdx = isByte ? 2 : 0;
+    const cP = !isNA && i>0 && f[i-1]!==null && f[i-1]>0 ? cnt/f[i-1]*100 : null;
+    const cL = !isNA && f[baseIdx]>0 ? cnt/f[baseIdx]*100 : 0;
+    const mo = !isNA ? cnt/getMonths() : 0;
+    const bp = !isNA && f[baseIdx]>0 ? cnt/f[baseIdx]*100 : 0;
+    const isSel=S.sel.includes(i);
+    const isF=sel.length===2&&sel[0]===i;
+    const isT=sel.length===2&&sel[1]===i;
+
+    if(isNA){
+      return`<div class="sc" style="border-color:var(--border);background:var(--bg);opacity:.3;cursor:default">
+        <div class="sname" style="color:${s.color}">${s.label.toUpperCase()}</div>
+        <div class="sdef">${s.sub}</div>
+        <div class="scount" style="font-size:18px;color:var(--muted2)">N/A</div>
+        <div style="font-size:10px;color:var(--muted2);margin-top:8px">Not available<br>in Byte-led view</div>
+      </div>`;
+    }
+
+    let mm="";
+    const fromLabel = isByte && i===2 ? "" : null; // AppComplete is base in Byte mode
+    if(cP!==null && !(isByte && i===2))mm+=`<div class="mr"><span class="ml">FROM PREV</span><span class="badge ${bcls(cP,s.ct)}">${cP.toFixed(1)}%</span></div>`;
+    if(!isByte || i>2) mm+=`<div class="mr"><span class="ml">${isByte?"FROM APP CMP":"FROM LEAD"}</span><span class="mv" style="color:var(--text);opacity:.7">${cL.toFixed(1)}%</span></div>`;
+    const monthlyTarget = getMonthlyTarget(i);
+    if(monthlyTarget!==null&&!isByte&&S.bkt==="All"){
+      const ok=Math.round(mo)>=monthlyTarget;
+      const paceColor = ok?"var(--green)":"var(--red)";
+      const paceText  = ok ? Math.round(mo)+" ✓" : Math.round(mo)+" ▼ (Target: "+monthlyTarget+")";
+      mm+='<div class="mr"><span class="ml">PER MONTH</span><span class="mv" style="color:'+paceColor+'">'+paceText+'</span></div>';
+    }
+    if(i===5){
+      const seasPct = getActiveSeasoning();
+      const seasCol = seasPct>=96?"var(--green)":seasPct>=88?"var(--yellow)":"var(--red)";
+      const seasNote = S.yr==="2025"?"Fully seasoned cohort.":S.yr==="2026"?"Recent cohorts significantly undercount.<br>9mo = 96% seasoned.":"2026 cohorts pulling down count.<br>9mo = 96% seasoned.";
+      mm+=`<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--border2)">
+        <div class="mr"><span class="ml">DATA SEASONED</span><span class="mv" style="color:${seasCol}">${seasPct.toFixed(0)}%</span></div>
+        <div style="font-size:9px;color:var(--muted2);margin-top:3px;line-height:1.4">${seasNote}</div>
+      </div>`;
+    }
+    return`<div class="sc" style="border-color:${isSel?s.color:"var(--border)"};background:${isSel?s.color+"12":"var(--bg2)"}" onclick="tgStage(${i})">
+      <div class="fill-bar" style="width:${bp}%;background:${s.color}"></div>
+      ${isF?`<div class="ctag" style="color:${s.color}">FROM</div>`:""}
+      ${isT?`<div class="ctag" style="color:${s.color}">TO</div>`:""}
+      <div class="sname" style="color:${s.color}">${s.label.toUpperCase()}</div>
+      <div class="sdef">${s.sub}</div>
+      <div class="scount">${fmt(cnt)}</div>
+      <div class="smets">${mm}</div>
+    </div>`;
+  }).join("");
+
+
+
+
+  const dp=document.getElementById("dpanel");
+  if(S.sel.length===0){dp.style.display="none";}
+  else{
+    dp.style.display="";
+    const fi=sel[0],ti=sel.length>=2?sel[1]:sel[0];
+    const fs=STAGES[fi],ts=STAGES[ti];
+    const sc=fi!==ti&&f[fi]>0?f[ti]/f[fi]*100:null;
+    const crk=S.cw===30?"contact30":"contact90";
+    const _c30s=d.c30||[d.contact30];const _c90s=d.c90||[d.contact90];
+    const _oc=d.open_counts||[d.open_total];
+    const _si=isByte?0:Math.min(ti,_c30s.length-1);
+    const _crn=S.cw===30?(_c30s[_si]||0):(_c90s[_si]||0);
+    const _crd=_oc[_si]||0;
+    const cr=_crd>0?_crn/_crd*100:0;
+    const crc=cr>=50?"var(--green)":cr>=20?"var(--yellow)":"var(--red)";
+
+    const showCR = ti !== 5 && !isByte;
+    const namedLOs=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
+    const isPair = fi !== ti;
+
+    // Build per-LO rows and accumulate totals
+    let totalCount=0, totalFr=0, totalCrN=0, totalCrD=0;
+    const loR=namedLOs.map(l=>{
+      const ld=getMX()[l]?.[S.bkt]||getMX()[l]?.["All"]||getMX()["All"]["All"];
+      const cnt=isByte?(ld.funnel[fi-2]||0):(ld.funnel[ti]);
+      const frRaw=isByte?(ld.funnel[fi-2]||0):(ld.funnel[fi]);
+      const fr=isPair?frRaw:ld.funnel[isByte?0:0];
+      const cv=fr>0?cnt/fr*100:0;
+      const _lc30=ld.c30||[ld.contact30];const _lc90=ld.c90||[ld.contact90];
+      const _loc=ld.open_counts||[ld.open_total];
+      const _lsi=isByte?0:Math.min(ti,_lc30.length-1);
+      const _lcrn=S.cw===30?(_lc30[_lsi]||0):(_lc90[_lsi]||0);
+      const _lcrd=_loc[_lsi]||0;
+      const lcr=_lcrd>0?_lcrn/_lcrd*100:0;
+      const isOther = l==="Other LO";
+      const dimStyle = isOther&&S.lo!=="Other LO"?"opacity:.55":"";
+      const dispCnt = isByte?ld.funnel[ti-2]||0:ld.funnel[ti];
+      totalCount += dispCnt;
+      totalFr    += fr;
+      totalCrN   += _lcrn;
+      totalCrD   += _lcrd;
+      const convCell = isPair ? '<td style="text-align:right"><span class="badge '+bcls(cv,fi===0?10:50)+'">'+cv.toFixed(1)+'%</span></td>' : '';
+      const crCell   = showCR ? '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=50?"var(--green)":lcr>=20?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>' : '';
+      return '<tr style="'+dimStyle+'"><td><span class="ldot" style="background:'+LOC[l]+'"></span>'+LOSH[l]+'</td><td style="text-align:right">'+fmt(dispCnt)+'</td>'+convCell+crCell+'</tr>';
+    }).join("");
+
+    // Totals row
+    const totalCv  = totalFr>0 ? totalCount/totalFr*100 : 0;
+    const totalCr  = totalCrD>0 ? totalCrN/totalCrD*100 : 0;
+    const totalConvCell = isPair ? '<td style="text-align:right"><span class="badge '+bcls(totalCv,fi===0?10:50)+'">'+totalCv.toFixed(1)+'%</span></td>' : '';
+    const totalCrCell   = showCR ? '<td style="text-align:right;color:'+(totalCr>=50?"var(--green)":totalCr>=20?"var(--yellow)":"var(--red)")+'">'+totalCr.toFixed(0)+'%</td>' : '';
+    const totalsRow = '<tr style="border-top:1px solid var(--border2);font-weight:600"><td style="color:var(--muted)">TOTAL</td><td style="text-align:right">'+fmt(totalCount)+'</td>'+totalConvCell+totalCrCell+'</tr>';
+
+    // By-type bars with total
+    const maxB=Math.max(1,...BUCKETS.filter(b=>b!=="All").map(b=>{const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];return bd?bd.funnel[ti]:0;}));
+    let bTotal=0, bFrTotal=0;
+    const bBars=BUCKETS.filter(b=>b!=="All").map(b=>{
+      const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];if(!bd)return"";
+      const v=bd.funnel[ti]; if(v===0) return"";
+      const bFr=bd.funnel[isByte?0:0]||bd.total||0;
+      bTotal+=v; bFrTotal+=bFr;
+      const w=maxB>0?v/maxB*100:0;
+      const bConv=bFr>0?v/bFr*100:0;
+      const convLabel=!isByte?`<span style="font-size:10px;color:var(--muted2);margin-left:4px">${bConv.toFixed(1)}%</span>`:'';
+      return`<div class="bbr"><div class="bbl">${BSH[b]}</div><div class="bbt"><div class="bbf" style="width:${w}%;background:${BC[b]}"></div></div><div class="bbv">${fmt(v)}${convLabel}</div></div>`;
+    }).join("");
+    const bTotalConv = bFrTotal>0 ? bTotal/bFrTotal*100 : 0;
+    const bTotalRow = `<div style="border-top:1px solid var(--border2);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted)"><span>TOTAL</span><span>${fmt(bTotal)}${!isByte?`<span style="font-size:10px;color:var(--muted2);margin-left:6px">${bTotalConv.toFixed(1)}%</span>`:''}</span></div>`;
+
+    let flagH="";
+    if(!isByte&&S.bkt==="All"){
+      const monthlyTarget = getMonthlyTarget(ti);
+      if(monthlyTarget!==null){
+        const mo=f[ti]/getMonths();const ok=mo>=monthlyTarget;
+        flagH=`<div class="df ${ok?"ok":"bad"}">${ts.label.toUpperCase()} MONTHLY PACE: ${Math.round(mo)}/mo · TARGET: ${monthlyTarget}/mo · ${ok?"✓ ON TRACK":"⚠ BELOW TARGET BY "+Math.round(monthlyTarget-mo)+"/mo"}</div>`;
+      }
+    }
+    const tt=fi===ti?`${ts.label.toUpperCase()} DETAIL`:`${fs.label.toUpperCase()} → ${ts.label.toUpperCase()}`;
+    dp.innerHTML=`<div class="detail">
+      <div class="dh"><div><div class="dt">${tt}</div>${sc!==null?'<div class="ds">'+fmt(f[fi])+' → '+fmt(f[ti])+' · <span style="color:'+ccol(sc,ts.ct||50)+'">'+sc.toFixed(1)+'% CONVERSION</span>'+(ts.ct?' <span style="color:var(--muted2)">(TARGET '+ts.ct+'%)</span>':'')+'</div>':''}</div>
+      <button class="clr" onclick="clrSel()">✕ CLEAR</button></div>
+      <div class="dcols" style="grid-template-columns:${showCR?'1fr 1.4fr':'1.4fr 1.4fr'}">
+        <div class="dc"><div class="dcl">PER LO — ${ts.label.toUpperCase()}</div>
+          <table class="lt"><thead><tr><th>LO</th><th style="text-align:right">COUNT</th>${isPair?'<th style="text-align:right">CONV%</th>':''}${showCR?'<th style="text-align:right">CR'+S.cw+'d</th>':''}</tr></thead>
+          <tbody>${loR}${totalsRow}</tbody></table>
+        </div>
+        <div class="dc"><div class="dcl">BY TYPE AT ${ts.label.toUpperCase()}</div>${bBars}${bTotalRow}</div>
+      </div>${flagH}</div>`;
+  }
+}
+
+function rTrend(){
+  document.getElementById("tmpp").innerHTML=STAGES.map((s,i)=>{
+    const a=S.tm===i;const st=a?`style="color:${s.color};border-color:${s.color}66;background:${s.color}12"`:"";
+    return`<button class="pill" ${st} onclick="setTM(${i})">${s.label}</button>`;
+  }).join("");
+  const aLOs=S.lo==="All"?["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"]:S.lo==="Active LOs"?["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"]:[S.lo];  const mi=S.tm;
+  const activeMonths = getActiveMonths();
+  const vals=activeMonths.map((_,mIdx)=>{
+    const m = activeMonths[mIdx];
+    const globalIdx = MONTHS.indexOf(m);
+    const byLO={};let tot=0;
+    aLOs.forEach(l=>{
+      const v=globalIdx>=0?(MDATA[l]?.[globalIdx]||0):0;
+      const ld=getMX()[l==="Other LO"?"All":l]?.["All"];
+      const ratio=ld&&ld.funnel[0]>0?ld.funnel[mi]/ld.funnel[0]:0;
+      const sc=mi===0?v:Math.round(v*ratio);
+      byLO[l]=sc;tot+=sc;
+    });
+    return{byLO,tot,m};
+  });
+  const maxV=Math.max(1,...vals.map(v=>v.tot));
+  const H=160;
+  document.getElementById("bchart").innerHTML=vals.map(({byLO,tot,m},i)=>{
+    const segs=aLOs.map(l=>{
+      const v=byLO[l]||0;const h=maxV>0?v/maxV*H:0;
+      return`<div class="bseg" style="height:${h}px;background:${LOC[l]||"#6b7280"};opacity:.85"></div>`;
+    }).join("");
+    const seasPct = getSeasoningPct(m);
+    const seasCol = seasPct>=96?"var(--green)":seasPct>=88?"var(--yellow)":"var(--red)";
+    const seasNote = mi===5?`<div style="position:absolute;bottom:-36px;left:0;right:0;text-align:center;font-size:9px;color:${seasCol}">${seasPct.toFixed(0)}%</div>`:"";
+    return`<div class="bcol"><div class="btot">${tot>0?fmt(tot):""}</div><div class="bstack" style="height:${H}px;width:100%">${segs}</div>${seasNote}<div class="blbl" style="bottom:${mi===5?"-50px":"-22px"}">${MLB[m]}</div></div>`;
+  }).join("");
+  document.getElementById("bleg").innerHTML=aLOs.map(l=>`<div class="li"><div class="ld" style="background:${LOC[l]||"#6b7280"}"></div>${l}</div>`).join("")
+    + (mi===5?`<div style="width:100%;text-align:center;font-size:10px;color:var(--muted2);margin-top:6px">% below each bar = cohort seasoning (9mo = 96% seasoned) · <span style="color:var(--green)">■</span> ≥96% · <span style="color:var(--yellow)">■</span> 88–95% · <span style="color:var(--red)">■</span> &lt;88%</div>`:"");
+  document.getElementById("cycards").innerHTML=[
+    {l:"LOCK → FUNDED",v:"28d",s:"Median · Purchase loans",c:"#34d399"},
+    {l:"REFI LOCK → FUNDED",v:"41d",s:"Median · Refinance",c:"#f5c842"},
+  ].map(c=>`<div class="cyc"><div class="cycl">${c.l}</div><div class="cycv" style="color:${c.c}">${c.v}</div><div class="cycs">${c.s}</div></div>`).join("");
+}
+
+function rBuckets(){
+  const hdr=`<thead><tr><th style="text-align:left;padding:8px 10px">SOURCE</th>${STAGES.map(s=>'<th style="color:'+s.color+'">'+s.label.toUpperCase()+'</th>').join("")}</tr></thead>`;
+  const rows=BUCKETS.filter(b=>b!=="All").map((b,ri)=>{
+    const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];if(!bd)return"";
+    const bf=bd.funnel;const col=BC[b];
+    const cells=bf.map((v,i)=>{
+      const cl=bf[0]>0&&v/bf[0]>=.1?"var(--green)":bf[0]>0&&v/bf[0]>=.03?"var(--yellow)":"var(--muted2)";
+      const convD = i>0 ? '<div class="conv" style="color:'+cl+'">'+pc(v,bf[0])+'</div>' : '';
+      return`<td style="text-align:right"><div style="color:var(--text)">${fmt(v)}</div>${convD}</td>`;
+    }).join("");
+    return`<tr style="background:${ri%2===0?"var(--bg2)":"var(--bg)"}"><td style="padding:8px 10px"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${col};margin-right:7px;vertical-align:middle"></span>${b}</td>${cells}</tr>`;
+  }).join("");
+  document.getElementById("bktbl").innerHTML=hdr+`<tbody>${rows}</tbody>`;
+  document.getElementById("bowarn").innerHTML="";
+}
+
+function setLO(l){S.lo=l;render();}
+function setBkt(b){S.bkt=b;render();}
+function setCW(w){S.cw=w;render();}
+function tgStage(i){let s=S.sel;s=s.includes(i)?s.filter(x=>x!==i):s.length>=2?[i]:[...s,i];S.sel=s;render();}
+function clrSel(){S.sel=[];render();}
+function setTM(i){S.tm=i;rTrend();}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{S.tab=t.dataset.tab;render();}));
+render();
+
+init();
+</script>
+</body>
+</html>
