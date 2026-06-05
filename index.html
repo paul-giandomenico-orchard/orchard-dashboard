@@ -1527,13 +1527,15 @@ function rFunnel(){
     function getCurCRN(d,si){if(S.cw===14)return(d.cc14||d.c14||[0])[si]||0;if(S.cw===30)return(d.cc30||d.c30||[0])[si]||0;if(S.cw==="all")return(d.ccall||d.call||[0])[si]||0;return(d.cc90||d.c90||[0])[si]||0;}
     function getTotCRN(d,si){if(S.cw===14)return(d.c14||[0])[si]||0;if(S.cw===30)return(d.c30||[0])[si]||0;if(S.cw==="all")return(d.call||d.c90||[0])[si]||0;return(d.c90||[0])[si]||0;}
     const isCurView = S.dtv==="current";
-    const _crn = isCurView ? getCurCRN(d,_si) : getTotCRN(d,_si);
-    const _crd = isCurView ? (d.cur_oc||d.open_counts||[d.open_total])[_si]||0
+    const isPair = fi !== ti;
+    const isCurViewFinal = isPair ? false : isCurView;
+    if(isPair && S.dtv==='current') S.dtv='total';
+    const _crn = isCurViewFinal ? getCurCRN(d,_si) : getTotCRN(d,_si);
+    const _crd = isCurViewFinal ? (d.cur_oc||d.open_counts||[d.open_total])[_si]||0
                            : (d.open_counts||[d.open_total])[_si]||0;
     const cr=_crd>0?_crn/_crd*100:0;
     const crc=cr>=50?"var(--green)":cr>=20?"var(--yellow)":"var(--red)";
 
-    const isPair = fi !== ti;
     const showCR = ti !== 5 && ti !== 6 && !isByte && !isPair;
     const namedLOs=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
 
@@ -1546,7 +1548,7 @@ function rFunnel(){
       const _byteRawFi=isByte?(_byteDispMap[fi]>=0?ld.funnel[_byteDispMap[fi]]||0:0):ld.funnel[fi];
       const cntTotal = _byteRawTi;
       const cntCur   = !isByte ? ((ld.cur_counts||[])[ti]||0) : cntTotal;
-      const cnt      = isCurView ? cntCur : cntTotal;
+      const cnt      = isCurViewFinal ? cntCur : cntTotal;
       const frRaw=_byteRawFi;
       const fr=isPair?frRaw:ld.funnel[isByte?0:0];
       const cv=fr>0?cnt/fr*100:0;
@@ -1557,8 +1559,8 @@ function rFunnel(){
       function _lgetCRN(d,si){if(S.cw===14)return(d.c14||d.c30||[0])[si]||0;if(S.cw===30)return(d.c30||[0])[si]||0;if(S.cw==="all")return(d.call||d.c90||[0])[si]||0;return(d.c90||[0])[si]||0;}
       function _lcurCRN(d,si){if(S.cw===14)return(d.cc14||d.c14||[0])[si]||0;if(S.cw===30)return(d.cc30||d.c30||[0])[si]||0;if(S.cw==="all")return(d.ccall||d.call||[0])[si]||0;return(d.cc90||d.c90||[0])[si]||0;}
       function _ltotCRN(d,si){if(S.cw===14)return(d.c14||[0])[si]||0;if(S.cw===30)return(d.c30||[0])[si]||0;if(S.cw==="all")return(d.call||d.c90||[0])[si]||0;return(d.c90||[0])[si]||0;}
-      const _lcrn = isCurView ? _lcurCRN(ld,_lsi) : _ltotCRN(ld,_lsi);
-      const _lcrd = isCurView ? (ld.cur_oc||ld.open_counts||[ld.open_total])[_lsi]||0
+      const _lcrn = isCurViewFinal ? _lcurCRN(ld,_lsi) : _ltotCRN(ld,_lsi);
+      const _lcrd = isCurViewFinal ? (ld.cur_oc||ld.open_counts||[ld.open_total])[_lsi]||0
                               : (ld.open_counts||[ld.open_total])[_lsi]||0;
       const lcr=_lcrd>0?_lcrn/_lcrd*100:0;
       const isOther = l==="Other LO";
@@ -1566,10 +1568,13 @@ function rFunnel(){
       const dispCnt = cnt;
       totalCount += dispCnt;
       totalFr    += fr;
-      totalCrN   += _lcrn;
-      totalCrD   += _lcrd;
+      // Only accumulate CR totals when the LO has leads at this stage
+      if(_lcrd>0){ totalCrN += _lcrn; totalCrD += _lcrd; }
       const convCell   = isPair ? '<td style="text-align:right"><span class="badge '+bcls(cv,fi===0?10:50)+'">'+cv.toFixed(1)+'%</span></td>' : '';
-      const crCell     = showCR ? '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=50?"var(--green)":lcr>=20?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>' : '';
+      // Show N/A when 0 count at this stage
+      const crCell     = showCR ? (cnt===0||_lcrd===0
+        ? '<td style="text-align:right;color:var(--muted2)">N/A</td>'
+        : '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=50?"var(--green)":lcr>=20?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>') : '';
       return '<tr style="'+dimStyle+'"><td><span class="ldot" style="background:'+LOC[l]+'"></span>'+LOSH[l]+'</td>'+(isPair?'':'<td style="text-align:right">'+fmt(dispCnt)+'</td>')+convCell+crCell+'</tr>';
     }).join("");
 
@@ -1587,7 +1592,7 @@ function rFunnel(){
     let bTotal=0, bFrTotal=0;
     const bBars=BUCKETS.filter(b=>b!=="All").map(b=>{
       const bd=getMX()[S.lo]?.[b]||getMX()["All"][b];if(!bd)return"";
-      const vTot=bd.funnel[isByte?_bti:ti]; const vCur=!isByte?((bd.cur_counts||[])[ti]||0):vTot; const v=isCurView?vCur:vTot; if(v===0) return"";
+      const vTot=bd.funnel[isByte?_bti:ti]; const vCur=!isByte?((bd.cur_counts||[])[ti]||0):vTot; const v=isCurViewFinal?vCur:vTot; if(v===0) return"";
       const _bfi=isByte?(_bdispMap[fi]>=0?_bdispMap[fi]:0):fi;
       const bFr=isPair?(bd.funnel[isByte?(_bfi):fi]||bd.total||0):0;
       bTotal+=v; bFrTotal+=bFr;
@@ -1610,20 +1615,31 @@ function rFunnel(){
     const tt=fi===ti?`${ts.label.toUpperCase()} DETAIL`:`${fs.label.toUpperCase()} → ${ts.label.toUpperCase()}`;
     const loLabel = S.lo==='Active LOs'?'Active LOs':S.lo==='All'?'All LOs':LOSH[S.lo]||S.lo;
     const yrLabel = S.yr==='All'?'All Years':S.yr;
-    const viewLabel = isPair?'':(isCurView?' · Current':' · Total');
+    // Pair selection always forces Total view — conversion only meaningful on full population
+    const viewLabel = isPair?'':(isCurViewFinal?' · Current':' · Total');
     const subHeader = `${loLabel} · ${yrLabel}${S.bkt!=='All'?' · '+BSH[S.bkt]:''}${viewLabel}`;
+    // Pair target = product of all individual stage ct values between fi and ti
+    const pairCt = (()=>{
+      if(fi===ti) return ts.ct;
+      let product = 1;
+      for(let i=fi+1; i<=ti; i++){
+        const ct = STAGES[i]?.ct;
+        if(ct) product *= ct/100;
+      }
+      return Math.round(product*1000)/10; // one decimal, e.g. 3.6
+    })();
     dp.innerHTML=`<div class="detail">
-      <div class="dh"><div><div class="dt">${tt}</div><div style="font-size:11px;color:var(--muted2);margin-top:2px;letter-spacing:.04em">${subHeader}</div>${sc!==null?'<div class="ds"><span style="color:'+ccol(sc,ts.ct||50)+'">'+sc.toFixed(1)+'% CONVERSION</span>'+(ts.ct?' <span style="color:var(--muted2)">(TARGET '+ts.ct+'%)</span>':'')+'</div>':''}</div>
+      <div class="dh"><div><div class="dt">${tt}</div><div style="font-size:11px;color:var(--muted2);margin-top:2px;letter-spacing:.04em">${subHeader}</div>${sc!==null?'<div class="ds"><span style="color:'+ccol(sc,pairCt||50)+'">'+sc.toFixed(1)+'% CONVERSION</span>'+(pairCt?' <span style="color:var(--muted2)">(TARGET '+pairCt+'%)</span>':'')+'</div>':''}</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:5px;overflow:hidden">
-          <button onclick="S.dtv='current';render()" style="font-family:var(--font);font-size:11px;padding:5px 12px;border:none;cursor:pointer;transition:all .12s;background:${isCurView?'var(--paul)':'transparent'};color:${isCurView?'#fff':'var(--muted)'}">Current</button>
-          <button onclick="S.dtv='total';render()"   style="font-family:var(--font);font-size:11px;padding:5px 12px;border:none;cursor:pointer;transition:all .12s;background:${isCurView?'transparent':'var(--paul)'};color:${isCurView?'var(--muted)':'#fff'}">Total</button>
-        </div>
-        ${!isCurView?'<span class="tip-wrap"><span class="tip-icon" style="font-size:11px;color:var(--muted2)">(?)</span><span class="tip-box" style="width:200px">When viewing Total, contact rate includes all leads that have ever been in this stage. For best accuracy, switch the Contact Window to <strong>All Time</strong>.</span></span>':''}
+        ${!isPair?`<div style="display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:5px;overflow:hidden">
+          <button onclick="S.dtv='current';render()" style="font-family:var(--font);font-size:11px;padding:5px 12px;border:none;cursor:pointer;transition:all .12s;background:${isCurViewFinal?'var(--paul)':'transparent'};color:${isCurViewFinal?'#fff':'var(--muted)'}">Current</button>
+          <button onclick="S.dtv='total';render()"   style="font-family:var(--font);font-size:11px;padding:5px 12px;border:none;cursor:pointer;transition:all .12s;background:${isCurViewFinal?'transparent':'var(--paul)'};color:${isCurViewFinal?'var(--muted)':'#fff'}">Total</button>
+        </div>`:''}
+        ${!isCurViewFinal&&!isPair?'<span class="tip-wrap"><span class="tip-icon" style="font-size:11px;color:var(--muted2)">(?)</span><span class="tip-box" style="width:200px">When viewing Total, contact rate includes all leads that have ever been in this stage. For best accuracy, switch the Contact Window to <strong>All Time</strong>.</span></span>':''}
         <button class="clr" onclick="clrSel()">✕ CLEAR</button>
       </div></div>
       <div class="dcols" style="grid-template-columns:${showCR?'1fr 1.4fr':'1.4fr 1.4fr'}">
-        <div class="dc"><div class="dcl">PER LO — ${ts.label.toUpperCase()}</div>
+        <div class="dc"><div class="dcl">PER LO</div>
           <table class="lt"><thead><tr><th>LO</th>${!isPair?'<th style="text-align:right">COUNT</th>':''}${isPair?'<th style="text-align:right">CONV%</th>':''}${showCR?'<th style="text-align:right">CR'+(S.cw==="all"?"(ALL)":S.cw+"d")+'</th>':''}</tr></thead>
           <tbody>${loR}${totalsRow}</tbody></table>
         </div>
