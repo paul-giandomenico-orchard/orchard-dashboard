@@ -1107,6 +1107,91 @@ async function processUpload(sfFile, byteFile, dialFile){
   }
 }
 
+const XLSXReader = {
+  async readFile(file) {
+    const buf = await file.arrayBuffer();
+    const zip = await this.unzip(buf);
+    const sharedStrings = zip['xl/sharedStrings.xml'] ? this.parseSharedStrings(zip['xl/sharedStrings.xml']) : [];
+    const sheetXML = zip['xl/worksheets/sheet1.xml'] || zip[Object.keys(zip).find(k => k.startsWith('xl/worksheets/sheet'))];
+    if (!sheetXML) throw new Error('No worksheet found in XLSX');
+    return this.parseSheet(sheetXML, sharedStrings);
+  },
+  async unzip(buf) {
+    const view = new DataView(buf); const files = {}; let offset = 0;
+    while (offset < buf.byteLength - 4) {
+      const sig = view.getUint32(offset, true);
+      if (sig === 0x04034b50) {
+        const flags = view.getUint16(offset+6,true), method = view.getUint16(offset+8,true);
+        let csize = view.getUint32(offset+18,true), usize = view.getUint32(offset+22,true);
+        const fnLen = view.getUint16(offset+26,true), extraLen = view.getUint16(offset+28,true);
+        const fname = new TextDecoder().decode(new Uint8Array(buf, offset+30, fnLen));
+        const dataOff = offset + 30 + fnLen + extraLen;
+        if (flags & 0x8) {
+          let search = dataOff;
+          while (search < buf.byteLength - 16) {
+            const dsig = view.getUint32(search, true);
+            if (dsig === 0x08074b50 || dsig === 0x02014b50) { if (dsig===0x08074b50){csize=view.getUint32(search+8,true);} break; }
+            search++;
+          }
+        }
+        if (fname && !fname.endsWith('/') && csize > 0) {
+          const compData = new Uint8Array(buf, dataOff, csize);
+          try {
+            let raw = method===0 ? compData : method===8 ? await this.inflate(compData) : null;
+            if (raw) files[fname] = new TextDecoder('utf-8',{fatal:false}).decode(raw);
+          } catch(e) {}
+        }
+        offset = dataOff + (csize > 0 ? csize : 0);
+      } else if (sig === 0x02014b50) { break; } else { offset++; }
+    }
+    return files;
+  },
+  async inflate(data) {
+    const ds = new DecompressionStream('deflate-raw');
+    const writer = ds.writable.getWriter(); writer.write(data); writer.close();
+    const chunks = []; const reader = ds.readable.getReader();
+    while (true) { const {done,value} = await reader.read(); if (done) break; chunks.push(value); }
+    const total = chunks.reduce((s,c)=>s+c.length,0); const out = new Uint8Array(total); let pos=0;
+    for (const c of chunks) { out.set(c,pos); pos+=c.length; } return out;
+  },
+  parseSharedStrings(xml) {
+    const strings = []; xml = xml.replace(/<[a-z0-9]+:/g,'<').replace(/<\/[a-z0-9]+:/g,'</');
+    const re = /<si>[\s\S]*?<\/si>/g; let m;
+    while ((m = re.exec(xml)) !== null) {
+      const tRe = /<t[^>]*>([^<]*)<\/t>/g; let parts=[], tm;
+      while ((tm = tRe.exec(m[0])) !== null) parts.push(tm[1]);
+      strings.push(parts.join('').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'"));
+    }
+    return strings;
+  },
+  parseSheet(xml, sharedStrings) {
+    xml = xml.replace(/<[a-z0-9]+:/g,'<').replace(/<\/[a-z0-9]+:/g,'</');
+    const rows = []; const rowRe = /<row[^>]*>([\s\S]*?)<\/row>/g; let rowMatch, headers=null;
+    while ((rowMatch = rowRe.exec(xml)) !== null) {
+      const cellRe2 = /<c r="([A-Z]+)\d+"([^>]*)>([\s\S]*?)<\/c>/g; const cells = {}; let cm;
+      while ((cm = cellRe2.exec(rowMatch[1])) !== null) {
+        const col=cm[1], attrs=cm[2], inner=cm[3];
+        const tMatch=attrs.match(/t="([^"]*)"/); const cellType=tMatch?tMatch[1]:'';
+        const vMatch=inner.match(/<v>([^<]*)<\/v>/); const vVal=vMatch?vMatch[1]:'';
+        const isBlock=inner.match(/<is>([\s\S]*?)<\/is>/);
+        let val='';
+        if (cellType==='s') { val=sharedStrings[parseInt(vVal)]||''; }
+        else if (cellType==='inlineStr'||isBlock) {
+          const tRe2=/<t[^>]*>([^<]*)<\/t>/g; const parts=[]; let tm2;
+          const searchIn=isBlock?isBlock[1]:inner;
+          while((tm2=tRe2.exec(searchIn))!==null) parts.push(tm2[1]); val=parts.join('');
+        } else { val=vVal; }
+        cells[col]=val.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+      }
+      if (!headers) { headers=Object.keys(cells).sort().map(c=>cells[c]); }
+      else if (Object.keys(cells).length>0) {
+        const row={}; const cols=Object.keys(cells).sort();
+        cols.forEach((c,i)=>{if(headers[i]!==undefined) row[headers[i]]=cells[c]||null;}); rows.push(row);
+      }
+    }
+    return rows;
+  }
+};
 function readExcel(file){ return XLSXReader.readFile(file); }
 
 function tick(){ return new Promise(r => setTimeout(r, 0)); }
