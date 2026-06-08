@@ -1540,6 +1540,17 @@ function rFunnel(){
     const namedLOs=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith","Other LO"];
 
     // Build per-LO rows and accumulate totals
+    const _crTarget = ts.ct || 50;
+    // Pair target = product of all individual stage ct values between fi and ti
+    const pairCt = (()=>{
+      if(fi===ti) return ts.ct;
+      let product = 1;
+      for(let i=fi+1; i<=ti; i++){
+        const ct = STAGES[i]?.ct;
+        if(ct) product *= ct/100;
+      }
+      return Math.round(product*1000)/10;
+    })();
     let totalCount=0, totalFr=0, totalCrN=0, totalCrD=0;
     const loR=namedLOs.map(l=>{
       const ld=getMX()[l]?.[S.bkt]||getMX()[l]?.["All"]||getMX()["All"]["All"];
@@ -1570,11 +1581,10 @@ function rFunnel(){
       totalFr    += fr;
       // Only accumulate CR totals when the LO has leads at this stage
       if(_lcrd>0){ totalCrN += _lcrn; totalCrD += _lcrd; }
-      const convCell   = isPair ? '<td style="text-align:right"><span class="badge '+bcls(cv,fi===0?10:50)+'">'+cv.toFixed(1)+'%</span></td>' : '';
-      // Show N/A when 0 count at this stage
+      const convCell   = isPair ? '<td style="text-align:right"><span class="badge '+bcls(cv,pairCt||50)+'">'+cv.toFixed(1)+'%</span></td>' : '';
       const crCell     = showCR ? (cnt===0||_lcrd===0
         ? '<td style="text-align:right;color:var(--muted2)">N/A</td>'
-        : '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=50?"var(--green)":lcr>=20?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>') : '';
+        : '<td style="text-align:right;color:'+(isOther?"var(--muted2)":lcr>=_crTarget?"var(--green)":lcr>=_crTarget*.7?"var(--yellow)":"var(--red)")+'">'+(isOther?"—":lcr.toFixed(0)+"%")+'</td>') : '';
       return '<tr style="'+dimStyle+'"><td><span class="ldot" style="background:'+LOC[l]+'"></span>'+LOSH[l]+'</td>'+(isPair?'':'<td style="text-align:right">'+fmt(dispCnt)+'</td>')+convCell+crCell+'</tr>';
     }).join("");
 
@@ -1582,7 +1592,7 @@ function rFunnel(){
     const totalCv  = totalFr>0 ? totalCount/totalFr*100 : 0;
     const totalCr  = totalCrD>0 ? totalCrN/totalCrD*100 : 0;
     const totalConvCell  = isPair ? '<td style="text-align:right"><span class="badge '+bcls(totalCv,fi===0?10:50)+'">'+totalCv.toFixed(1)+'%</span></td>' : '';
-    const totalCrCell    = showCR ? '<td style="text-align:right;color:'+(totalCr>=50?"var(--green)":totalCr>=20?"var(--yellow)":"var(--red)")+'">'+totalCr.toFixed(0)+'%</td>' : '';
+    const totalCrCell    = showCR ? '<td style="text-align:right;color:'+(totalCr>=(_crTarget||50)?"var(--green)":totalCr>=(_crTarget||50)*.7?"var(--yellow)":"var(--red)")+'">'+totalCr.toFixed(0)+'%</td>' : '';
     const totalsRow = '<tr style="border-top:1px solid var(--border2);font-weight:600"><td style="color:var(--muted)">TOTAL</td>'+(isPair?'':'<td style="text-align:right">'+fmt(totalCount)+'</td>')+totalConvCell+totalCrCell+'</tr>';
 
     // By-type bars with total
@@ -1619,15 +1629,6 @@ function rFunnel(){
     const viewLabel = isPair?'':(isCurViewFinal?' · Current':' · Total');
     const subHeader = `${loLabel} · ${yrLabel}${S.bkt!=='All'?' · '+BSH[S.bkt]:''}${viewLabel}`;
     // Pair target = product of all individual stage ct values between fi and ti
-    const pairCt = (()=>{
-      if(fi===ti) return ts.ct;
-      let product = 1;
-      for(let i=fi+1; i<=ti; i++){
-        const ct = STAGES[i]?.ct;
-        if(ct) product *= ct/100;
-      }
-      return Math.round(product*1000)/10; // one decimal, e.g. 3.6
-    })();
     dp.innerHTML=`<div class="detail">
       <div class="dh"><div><div class="dt">${tt}</div><div style="font-size:11px;color:var(--muted2);margin-top:2px;letter-spacing:.04em">${subHeader}</div>${sc!==null?'<div class="ds"><span style="color:'+ccol(sc,pairCt||50)+'">'+sc.toFixed(1)+'% CONVERSION</span>'+(pairCt?' <span style="color:var(--muted2)">(TARGET '+pairCt+'%)</span>':'')+'</div>':''}</div>
       <div style="display:flex;align-items:center;gap:8px">
