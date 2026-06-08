@@ -114,7 +114,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 .wb{margin-top:12px;padding:12px 16px;background:#1a06062a;border:1px solid #ef444433;border-radius:5px;font-size:12px;color:#fca5a5;line-height:1.5}
 .tmpills{display:flex;gap:5px;flex-wrap:wrap}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="header">
@@ -123,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
     <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.0</div></div>
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.1</div></div>
     <button onclick="openSettingsModal()"
       style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
       onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
@@ -510,6 +509,14 @@ async function storageLoad(key, shared=false){
 function parseDate(v){
   if(!v || v==='' || v===null || v===undefined) return null;
   if(v instanceof Date) return isNaN(v) ? null : v;
+  // Handle Excel date serial numbers (numeric strings like "45707.82")
+  const num = parseFloat(v);
+  if(!isNaN(num) && num > 40000 && num < 60000 && String(v).match(/^\d+(\.\d+)?$/)){
+    // Excel serial: days since 1899-12-30
+    const ms = (num - 25569) * 86400 * 1000;
+    const d = new Date(ms);
+    return isNaN(d) ? null : d;
+  }
   const d = new Date(v);
   return isNaN(d) ? null : d;
 }
@@ -1022,91 +1029,6 @@ function buildOtherTooltip(sfRows){
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PROCESS UPLOAD: parse Excel → build all matrices → save to storage
-// ═══════════════════════════════════════════════════════════════════════════
-async function processUpload(sfFile, byteFile, dialFile){
-  const statusEl = document.getElementById('upload-status');
-  function setStatus(msg, color='var(--muted)'){
-    if(statusEl) statusEl.innerHTML = '<span style="color:'+color+'">'+msg+'</span>';
-  }
-
-  setStatus('Reading files…');
-  try {
-    setStatus('Parsing Salesforce data…');
-    const [sfRows, byteRows] = await Promise.all([
-      readExcel(sfFile),
-      readExcel(byteFile),
-    ]);
-    setStatus('Parsing Dialpad call log…');
-    const dialText = await dialFile.text();
-    const dialRows = parseDialpadCSV(dialText);
-
-    setStatus('Building Byte lookup…');
-    const byteMap = {};
-    byteRows.forEach(r => {
-      const fn = String(r['File Name']||'').trim();
-      if(fn) byteMap[fn] = r;
-    });
-
-    setStatus('Building SF matrices (this takes ~5s)…');
-    await tick();
-    const phoneContactMap = buildPhoneContactMap(dialRows);
-    const sfMx = buildSFMatrices(sfRows, byteMap, phoneContactMap);
-
-    setStatus('Building Byte matrices…');
-    await tick();
-    const byteMx = buildByteMatrices(byteRows);
-
-    setStatus('Building monthly data…');
-    await tick();
-    const mdataResult = buildMDATA(sfRows);
-
-    setStatus('Computing L2F rates…');
-    const l2f = buildL2FRates(byteRows);
-    const seas = buildSeasoning(byteRows);
-    const mmap = buildMonthsMap(sfRows);
-    const gapResult = buildGapRecords(byteRows, sfRows);
-    const otherTip = buildOtherTooltip(sfRows);
-
-    setStatus('Saving to shared storage…');
-    await tick();
-    const payload = {
-      ...sfMx, ...byteMx,
-      MDATA:mdataResult.MDATA,
-      MONTHS:mdataResult.MONTHS,
-      MLB:mdataResult.MLB,
-      MONTHS_2025:mdataResult.MONTHS_2025,
-      MONTHS_2026:mdataResult.MONTHS_2026,
-      L2F_RATES:l2f,
-      SEASONING_2025:seas.s2025,
-      SEASONING_2026:seas.s2026,
-      MONTHS_MAP:mmap,
-      GAP_RECORDS:gapResult.GAP_RECORDS,
-      GAP_SUMMARY:gapResult.GAP_SUMMARY,
-      OTHER_TOOLTIP:otherTip,
-      DATA_DATE: new Date(TODAY_MS).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
-      DEFAULT_TARGETS: MONTHLY_TARGETS,
-    };
-    // Add column lists for server-side validation
-    payload.sf_cols   = sfRows.length   ? Object.keys(sfRows[0])   : [];
-    payload.byte_cols = byteRows.length ? Object.keys(byteRows[0]) : [];
-    payload.dial_cols = dialRows.length ? Object.keys(dialRows[0]) : [];
-    await storageSave('dashboard_data', payload, true);
-
-    setStatus('✓ Upload complete! Dashboard updated.','var(--green)');
-    // Update the data-as-of label
-    const metaEl = document.querySelector('.header-meta');
-    if(metaEl) metaEl.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">Data as of '+payload.DATA_DATE+'</div>';
-    applyPayload(payload);
-    setTimeout(()=>closeUploadModal(),1500);
-
-  } catch(err){
-    console.error(err);
-    setStatus('✗ Error: '+err.message,'var(--red)');
-  }
-}
-
 const XLSXReader = {
   async readFile(file) {
     const buf = await file.arrayBuffer();
@@ -1194,6 +1116,92 @@ const XLSXReader = {
 };
 function readExcel(file){ return XLSXReader.readFile(file); }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PROCESS UPLOAD: parse Excel → build all matrices → save to storage
+// ═══════════════════════════════════════════════════════════════════════════
+async function processUpload(sfFile, byteFile, dialFile){
+  const statusEl = document.getElementById('upload-status');
+  function setStatus(msg, color='var(--muted)'){
+    if(statusEl) statusEl.innerHTML = '<span style="color:'+color+'">'+msg+'</span>';
+  }
+
+  setStatus('Reading files…');
+  try {
+    setStatus('Parsing Salesforce data…');
+    const [sfRows, byteRows] = await Promise.all([
+      readExcel(sfFile),
+      readExcel(byteFile),
+    ]);
+    setStatus('Parsing Dialpad call log…');
+    const dialText = await dialFile.text();
+    const dialRows = parseDialpadCSV(dialText);
+
+    setStatus('Building Byte lookup…');
+    const byteMap = {};
+    byteRows.forEach(r => {
+      const fn = String(r['File Name']||'').trim();
+      if(fn) byteMap[fn] = r;
+    });
+
+    setStatus('Building SF matrices (this takes ~5s)…');
+    await tick();
+    const phoneContactMap = buildPhoneContactMap(dialRows);
+    const sfMx = buildSFMatrices(sfRows, byteMap, phoneContactMap);
+
+    setStatus('Building Byte matrices…');
+    await tick();
+    const byteMx = buildByteMatrices(byteRows);
+
+    setStatus('Building monthly data…');
+    await tick();
+    const mdataResult = buildMDATA(sfRows);
+
+    setStatus('Computing L2F rates…');
+    const l2f = buildL2FRates(byteRows);
+    const seas = buildSeasoning(byteRows);
+    const mmap = buildMonthsMap(sfRows);
+    const gapResult = buildGapRecords(byteRows, sfRows);
+    const otherTip = buildOtherTooltip(sfRows);
+
+    setStatus('Saving to shared storage…');
+    await tick();
+    const payload = {
+      ...sfMx, ...byteMx,
+      MDATA:mdataResult.MDATA,
+      MONTHS:mdataResult.MONTHS,
+      MLB:mdataResult.MLB,
+      MONTHS_2025:mdataResult.MONTHS_2025,
+      MONTHS_2026:mdataResult.MONTHS_2026,
+      L2F_RATES:l2f,
+      SEASONING_2025:seas.s2025,
+      SEASONING_2026:seas.s2026,
+      MONTHS_MAP:mmap,
+      GAP_RECORDS:gapResult.GAP_RECORDS,
+      GAP_SUMMARY:gapResult.GAP_SUMMARY,
+      OTHER_TOOLTIP:otherTip,
+      DATA_DATE: new Date(TODAY_MS).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+      DEFAULT_TARGETS: MONTHLY_TARGETS,
+    };
+    // Add column lists for server-side validation
+    payload.sf_cols   = sfRows.length   ? Object.keys(sfRows[0])   : [];
+    payload.byte_cols = byteRows.length ? Object.keys(byteRows[0]) : [];
+    payload.dial_cols = dialRows.length ? Object.keys(dialRows[0]) : [];
+    await storageSave('dashboard_data', payload, true);
+
+    setStatus('✓ Upload complete! Dashboard updated.','var(--green)');
+    // Update the data-as-of label
+    const metaEl = document.querySelector('.header-meta');
+    if(metaEl) metaEl.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">Data as of '+payload.DATA_DATE+'</div>';
+    applyPayload(payload);
+    setTimeout(()=>closeUploadModal(),1500);
+
+  } catch(err){
+    console.error(err);
+    setStatus('✗ Error: '+err.message,'var(--red)');
+  }
+}
+
+
 function tick(){ return new Promise(r => setTimeout(r, 0)); }
 
 function applyPayload(p){
@@ -1229,7 +1237,7 @@ function applyPayload(p){
     sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
   }
   const meta = document.querySelector('.header-meta');
-  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.0'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.1'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
 
   // Rebuild getOverallSeasoning weight table
   window._MDATA_WEIGHTS = MDATA;
