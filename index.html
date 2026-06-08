@@ -559,37 +559,29 @@ function parseDialpadCSV(text){
 }
 
 function buildPhoneContactMap(dialRows){
-  // Returns {phone: {dp_30: bool, dp_90: bool}}
+  // Returns {phone: {dp_14,dp_30,dp_90,dp_all: bool}}
   const todayMs = TODAY_MS || Date.now();
+  const cutoff14 = todayMs - 14*864e5;
   const cutoff30 = todayMs - 30*864e5;
   const cutoff90 = todayMs - 90*864e5;
-  // All UserProfile callers — includes LOAs and any team member, not just active LOs
-
-  const map30 = new Map(); // phone -> true if any contact in 30d
-  const map90 = new Map(); // phone -> true if any contact in 90d
-
+  const map = new Map();
   for(const r of dialRows){
     if(r['target_kind'] !== 'UserProfile') continue;
     if(r['is_internal']==='True'||r['is_internal']===true||r['is_internal']==='true') continue;
-    // No name filter — count calls from any team member
-
-    const phone = normPhone(r['external_number']);
-    if(!phone) continue;
-
-    const ts = new Date(r['date_started']).getTime();
-    if(isNaN(ts)) continue;
-
-    // Contacted = outbound attempt OR inbound answered
+    const phone = normPhone(r['external_number']); if(!phone) continue;
+    const ts = new Date(r['date_started']).getTime(); if(isNaN(ts)) continue;
     const dir = (r['direction']||'').toLowerCase();
     const cats = (r['categories']||'').toLowerCase();
     const isContacted = dir==='outbound' || (dir==='inbound' && cats.includes('answered'));
     if(!isContacted) continue;
-
-    if(ts >= cutoff30){ map30.set(phone, true); }
-    if(ts >= cutoff90){ map90.set(phone, true); }
+    if(!map.has(phone)) map.set(phone, {dp_14:false,dp_30:false,dp_90:false,dp_all:false});
+    const m = map.get(phone);
+    m.dp_all = true;
+    if(ts >= cutoff90) m.dp_90 = true;
+    if(ts >= cutoff30) m.dp_30 = true;
+    if(ts >= cutoff14) m.dp_14 = true;
   }
-
-  return {map30, map90};
+  return map;
 }
 
 function normPhone(p){
@@ -598,15 +590,9 @@ function normPhone(p){
   if(digits.length===11 && digits[0]==='1') return digits.slice(1);
   return digits.length===10 ? digits : null;
 }
-function buildSFMatrices(sfRows, byteMap, phoneContactMap){
-  // sfRows: array of SF lead objects (normalized column names)
-  // byteMap: {fileNum -> byteRow}
+function buildSFMatrices(sfRows, byteMap, phoneMap){
+  const PA_STAGES = new Set(['Pre-Approval Review','Pre-Approved']);
 
-  const today = new Date(TODAY_MS);
-  const cutoff30 = new Date(TODAY_MS - 30*864e5);
-  const cutoff90 = new Date(TODAY_MS - 90*864e5);
-
-  // Enrich each SF row
   const rows = sfRows.map(r => {
     const created = parseDate(r['Created Date']);
     if(!created || created.getFullYear() < 2025) return null;
@@ -614,13 +600,15 @@ function buildSFMatrices(sfRows, byteMap, phoneContactMap){
     const bucket = assignBucket(r['Brokerage Service Name'], r['OM Lead Source']);
     const fileKey = String(r['Primary Byte File Name']||'').trim();
     const byteRow = byteMap[fileKey] || null;
-    const lastActivity = parseDate(r['Last Activity Date']);
     const stage = r['Stage'] || '';
+    const phone = normPhone(r['Contact Phone']);
+    const pc = phone ? phoneMap.get(phone) : null;
 
-    const hasFile = !!byteRow;
+    const hasFile  = !!byteRow;
     const appDate  = byteRow ? parseDate(byteRow['Application Date']) : null;
     const lockDate = byteRow ? parseDate(byteRow['Lock Start Date'])   : null;
     const fundDate = byteRow ? parseDate(byteRow['Funded Date'])       : null;
+    const loanStatus = byteRow ? (byteRow['Loan Status']||'') : '';
 
     const appStarted  = APP_STARTED_STAGES.has(stage) || hasFile;
     const appComplete = hasFile;
@@ -628,81 +616,109 @@ function buildSFMatrices(sfRows, byteMap, phoneContactMap){
     const hasLock     = !!lockDate;
     const hasFunded   = !!fundDate;
     const isOpen      = !DEAD_STAGES.has(stage);
-    const sf30        = lastActivity ? lastActivity >= cutoff30 : false;
-    const sf90        = lastActivity ? lastActivity >= cutoff90 : false;
-    const year        = created.getFullYear();
-    const monthKey    = buildMonthKey(created);
+    const isDead      = stage === 'Dead Lead';
 
-    return {lo, bucket, year, monthKey, stage, isOpen, appStarted, appComplete, hasTrid, hasLock, hasFunded, sf30, sf90};
+    // Currently-in-stage (mutually exclusive)
+    const curLead     = isOpen;
+    const curAppStart = stage === 'Application Started';
+    const curAppCmp   = PA_STAGES.has(stage) && !hasLock;
+    const curTrid     = (PA_STAGES.has(stage) || stage === 'Loan In-Progress') && hasTrid && !hasLock;
+    const curLock     = hasLock && isOpen;
+
+    const year     = created.getFullYear();
+    const monthKey = buildMonthKey(created);
+
+    return {lo, bucket, year, monthKey, stage, isOpen, isDead,
+            appStarted, appComplete, hasTrid, hasLock, hasFunded,
+            curLead, curAppStart, curAppCmp, curTrid, curLock,
+            dp14: pc?.dp_14||false, dp30: pc?.dp_30||false,
+            dp90: pc?.dp_90||false, dpall: pc?.dp_all||false};
   }).filter(Boolean);
 
-  // Build matrix for a subset of rows
   function buildMatrix(subset){
     const result = {};
-    const allLOs = [...ACTIVE_LOS, 'Other LO', 'All'];
-    const allBkts = [...BUCKETS]; // includes "All"
-
-    for(const lo of allLOs){
+    for(const lo of [...ACTIVE_LOS, 'Other LO', 'All']){
       result[lo] = {};
-      const loRows = lo === 'All' ? subset : subset.filter(r => r.lo === lo);
-      for(const bkt of allBkts){
-        const rows = bkt === 'All' ? loRows : loRows.filter(r => r.bucket === bkt);
-        const n = rows.length;
+      const loRows = lo==='All' ? subset : subset.filter(r=>r.lo===lo);
+      for(const bkt of BUCKETS){
+        const sub = bkt==='All' ? loRows : loRows.filter(r=>r.bucket===bkt);
+        const n = sub.length;
 
-        const f0 = n;
-        const f1 = rows.filter(r => r.appStarted).length;
-        const f2 = rows.filter(r => r.appComplete).length;
-        const f3 = rows.filter(r => r.hasTrid).length;
-        const f4 = rows.filter(r => r.hasLock).length;
-        const f5 = rows.filter(r => r.hasFunded).length;
+        // Cumulative groups (ever reached stage)
+        const gOpen  = sub.filter(r=>r.isOpen);
+        const gAppS  = sub.filter(r=>r.appStarted && r.isOpen);
+        const gAppC  = sub.filter(r=>r.appComplete);
+        const gTrid  = sub.filter(r=>r.hasTrid);
+        const gLock  = sub.filter(r=>r.hasLock);
+        const cumG   = [gOpen, gAppS, gAppC, gTrid, gLock];
 
-        const openAll  = rows.filter(r => r.isOpen);
-        const openAppS = rows.filter(r => r.appStarted && r.isOpen);
-        const openAppC = rows.filter(r => r.appComplete && r.isOpen);
-        const openTrid = rows.filter(r => r.hasTrid && r.isOpen);
-        const openLock = rows.filter(r => r.hasLock && r.isOpen);
+        // Currently-in-stage groups
+        const gcLead = sub.filter(r=>r.curLead);
+        const gcAppS = sub.filter(r=>r.curAppStart);
+        const gcAppC = sub.filter(r=>r.curAppCmp);
+        const gcTrid = sub.filter(r=>r.curTrid);
+        const gcLock = sub.filter(r=>r.curLock);
+        const curG   = [gcLead, gcAppS, gcAppC, gcTrid, gcLock];
 
-        const c30 = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.filter(r=>r.sf30).length);
-        const c90 = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.filter(r=>r.sf90).length);
-        const oc  = [openAll,openAppS,openAppC,openTrid,openLock].map(g => g.length);
+        const c14  = cumG.map(g=>g.filter(r=>r.dp14).length);
+        const c30  = cumG.map(g=>g.filter(r=>r.dp30).length);
+        const c90  = cumG.map(g=>g.filter(r=>r.dp90).length);
+        const call = cumG.map(g=>g.filter(r=>r.dpall).length);
+        const oc   = cumG.map(g=>g.length);
+
+        const cc14  = curG.map(g=>g.filter(r=>r.dp14).length);
+        const cc30  = curG.map(g=>g.filter(r=>r.dp30).length);
+        const cc90  = curG.map(g=>g.filter(r=>r.dp90).length);
+        const ccall = curG.map(g=>g.filter(r=>r.dpall).length);
+        const curOc = curG.map(g=>g.length);
 
         result[lo][bkt] = {
-          funnel:[f0,f1,f2,f3,f4,f5],
-          contact30:c30[0], contact90:c90[0],
-          c30, c90, open_counts:oc,
-          total:n, open_total:oc[0]
+          funnel:[n,
+                  sub.filter(r=>r.appStarted).length,
+                  sub.filter(r=>r.appComplete).length,
+                  sub.filter(r=>r.hasTrid).length,
+                  sub.filter(r=>r.hasLock).length,
+                  sub.filter(r=>r.hasFunded).length,
+                  sub.filter(r=>r.isDead).length],
+          contact14:c14[0], contact30:c30[0], contact90:c90[0], contactall:call[0],
+          c14, c30, c90, call, open_counts:oc,
+          cur_counts:[gcLead.length,gcAppS.length,gcAppC.length,gcTrid.length,gcLock.length,0,0],
+          cc14, cc30, cc90, ccall, cur_oc:curOc,
+          total:n, open_total:gcLead.length
         };
       }
     }
     return result;
   }
 
-  const all25  = rows.filter(r => r.year >= 2025);
-  const only25 = rows.filter(r => r.year === 2025);
-  const only26 = rows.filter(r => r.year === 2026);
-
-  // Add Active LOs = sum of 5 active LO buckets
   function addActiveLOs(mx){
-    const keys = ["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"];
-    const bkts = Object.keys(mx["All"] || {});
-    mx["Active LOs"] = {};
-    for(const bkt of bkts){
-      const entries = keys.map(k => mx[k]?.[bkt]).filter(Boolean);
-      if(!entries.length) continue;
-      mx["Active LOs"][bkt] = {
-        funnel: Array.from({length:6},(_,i)=>entries.reduce((s,e)=>s+(e.funnel[i]||0),0)),
-        contact30: entries.reduce((s,e)=>s+e.contact30,0),
-        contact90: entries.reduce((s,e)=>s+e.contact90,0),
-        c30: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.c30[i]||0),0)),
-        c90: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.c90[i]||0),0)),
-        open_counts: Array.from({length:5},(_,i)=>entries.reduce((s,e)=>s+(e.open_counts[i]||0),0)),
-        total: entries.reduce((s,e)=>s+e.total,0),
-        open_total: entries.reduce((s,e)=>s+e.open_total,0),
+    const keys = ACTIVE_LOS;
+    mx['Active LOs'] = {};
+    for(const bkt of BUCKETS){
+      const ee = keys.map(k=>mx[k]?.[bkt]).filter(Boolean);
+      if(!ee.length) continue;
+      const s = (key,l) => Array.from({length:l},(_,i)=>ee.reduce((a,e)=>a+(e[key]?.[i]||0),0));
+      mx['Active LOs'][bkt] = {
+        funnel: s('funnel',7),
+        contact14:ee.reduce((a,e)=>a+e.contact14,0),
+        contact30:ee.reduce((a,e)=>a+e.contact30,0),
+        contact90:ee.reduce((a,e)=>a+e.contact90,0),
+        contactall:ee.reduce((a,e)=>a+e.contactall,0),
+        c14:s('c14',5), c30:s('c30',5), c90:s('c90',5), call:s('call',5),
+        open_counts:s('open_counts',5),
+        cur_counts:s('cur_counts',7),
+        cc14:s('cc14',5), cc30:s('cc30',5), cc90:s('cc90',5), ccall:s('ccall',5),
+        cur_oc:s('cur_oc',5),
+        total:ee.reduce((a,e)=>a+e.total,0),
+        open_total:ee.reduce((a,e)=>a+e.open_total,0),
       };
     }
     return mx;
   }
 
+  const all25=rows.filter(r=>r.year>=2025);
+  const only25=rows.filter(r=>r.year===2025);
+  const only26=rows.filter(r=>r.year===2026);
   return {
     MX_SF_ALL:  addActiveLOs(buildMatrix(all25)),
     MX_SF_2025: addActiveLOs(buildMatrix(only25)),
@@ -711,6 +727,11 @@ function buildSFMatrices(sfRows, byteMap, phoneContactMap){
 }
 
 function buildByteMatrices(byteRows){
+  const TERMINAL = new Set(['Withdrawn','Withdrawn - Preapproval','Denied','Cancelled','Canceled',
+    'Approved Not Accepted','Preapproval Not Accepted','Preapproval Request Denied',
+    'File Closed For Incompleteness']);
+  const FUNDED_S = new Set(['Funded','Purchased','Shipped','Paid']);
+
   const rows = byteRows.map(r => {
     const purpose = r['Loan Purpose'] || '';
     if(EXCLUDE_PURPOSES.has(purpose)) return null;
@@ -721,38 +742,48 @@ function buildByteMatrices(byteRows){
     const appDate  = parseDate(r['Application Date']);
     const lockDate = parseDate(r['Lock Start Date']);
     const fundDate = parseDate(r['Funded Date']);
+    const status   = r['Loan Status'] || '';
+    const isTerminal = TERMINAL.has(status);
+    const isFunded   = FUNDED_S.has(status);
+    const isActive   = !isTerminal && !isFunded;
     const year = created.getFullYear();
-    return {lo, year, hasTrid:!!appDate, hasLock:!!lockDate, hasFunded:!!fundDate};
+    return {lo, year, hasTrid:!!appDate, hasLock:!!lockDate, hasFunded:!!fundDate,
+            isTerminal, isActive};
   }).filter(Boolean);
 
   function buildMatrix(subset){
     const result = {};
-    const allLOs = [...ACTIVE_LOS, 'Other LO', 'All'];
-    for(const lo of allLOs){
-      const loRows = lo === 'All' ? subset : subset.filter(r => r.lo === lo);
-      const n = loRows.length;
+    for(const lo of [...ACTIVE_LOS, 'Other LO', 'All']){
+      const sub = lo==='All' ? subset : subset.filter(r=>r.lo===lo);
+      const n = sub.length;
+      const activeCnt = sub.filter(r=>r.isActive).length;
       result[lo] = {All:{
-        funnel:[n, loRows.filter(r=>r.hasTrid).length, loRows.filter(r=>r.hasLock).length, loRows.filter(r=>r.hasFunded).length],
+        funnel:[n, n, n,
+                sub.filter(r=>r.hasTrid).length,
+                sub.filter(r=>r.hasLock).length,
+                sub.filter(r=>r.hasFunded).length,
+                sub.filter(r=>r.isTerminal).length],
+        cur_counts:[activeCnt, 0, activeCnt, 0, 0, 0, 0],
         total:n
       }};
     }
     return result;
   }
 
-  const all25  = rows.filter(r => r.year >= 2025);
-  const only25 = rows.filter(r => r.year === 2025);
-  const only26 = rows.filter(r => r.year === 2026);
-
   function addByteActiveLOs(mx){
-    const keys=["Paul Novik","Barbara Holder","Annette De Los Santos","Zac Thiel","Gen Smith"];
-    const entries=keys.map(k=>mx[k]?.['All']).filter(Boolean);
-    if(!entries.length) return mx;
-    mx["Active LOs"]={'All':{
-      funnel:Array.from({length:4},(_,i)=>entries.reduce((s,e)=>s+(e.funnel[i]||0),0)),
-      total:entries.reduce((s,e)=>s+e.total,0)
+    const ee = ACTIVE_LOS.map(k=>mx[k]?.['All']).filter(Boolean);
+    if(!ee.length) return mx;
+    mx['Active LOs'] = {All:{
+      funnel: Array.from({length:7},(_,i)=>ee.reduce((s,e)=>s+(e.funnel[i]||0),0)),
+      cur_counts: Array.from({length:7},(_,i)=>ee.reduce((s,e)=>s+(e.cur_counts[i]||0),0)),
+      total: ee.reduce((s,e)=>s+e.total,0)
     }};
     return mx;
   }
+
+  const all25=rows.filter(r=>r.year>=2025);
+  const only25=rows.filter(r=>r.year===2025);
+  const only26=rows.filter(r=>r.year===2026);
   return {
     MX_BYTE_ALL:  addByteActiveLOs(buildMatrix(all25)),
     MX_BYTE_2025: addByteActiveLOs(buildMatrix(only25)),
@@ -1002,16 +1033,11 @@ async function processUpload(sfFile, byteFile, dialFile){
 
   setStatus('Reading files…');
   try {
-    // Parse both Excel files via SheetJS
-    const [sfWB, byteWB] = await Promise.all([
+    setStatus('Parsing Salesforce data…');
+    const [sfRows, byteRows] = await Promise.all([
       readExcel(sfFile),
       readExcel(byteFile),
     ]);
-
-    setStatus('Parsing Salesforce data…');
-    const sfRows = XLSX.utils.sheet_to_json(sfWB.Sheets[sfWB.SheetNames[0]], {defval:null, raw:false});
-    setStatus('Parsing Byte data…');
-    const byteRows = XLSX.utils.sheet_to_json(byteWB.Sheets[byteWB.SheetNames[0]], {defval:null, raw:false});
     setStatus('Parsing Dialpad call log…');
     const dialText = await dialFile.text();
     const dialRows = parseDialpadCSV(dialText);
@@ -1060,6 +1086,7 @@ async function processUpload(sfFile, byteFile, dialFile){
       GAP_SUMMARY:gapResult.GAP_SUMMARY,
       OTHER_TOOLTIP:otherTip,
       DATA_DATE: new Date(TODAY_MS).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+      DEFAULT_TARGETS: MONTHLY_TARGETS,
     };
     // Add column lists for server-side validation
     payload.sf_cols   = sfRows.length   ? Object.keys(sfRows[0])   : [];
@@ -1080,19 +1107,7 @@ async function processUpload(sfFile, byteFile, dialFile){
   }
 }
 
-function readExcel(file){
-  return new Promise((res,rej)=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      try{
-        const wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
-        res(wb);
-      } catch(err){ rej(err); }
-    };
-    reader.onerror = ()=>rej(new Error('File read error'));
-    reader.readAsArrayBuffer(file);
-  });
-}
+function readExcel(file){ return XLSXReader.readFile(file); }
 
 function tick(){ return new Promise(r => setTimeout(r, 0)); }
 
