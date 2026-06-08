@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
     <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.1</div></div>
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.9.0</div></div>
     <button onclick="openSettingsModal()"
       style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
       onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
@@ -290,8 +290,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
         <input id="byte-file" type="file" accept=".xlsx,.xls" onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin-bottom:6px">DIALPAD CALL LOG <span style="color:var(--muted2);font-weight:400">(Call_Logs_*.csv — export from Dialpad admin)</span></div>
-        <input id="dial-file" type="file" accept=".csv" onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:600;margin-bottom:6px">DIALPAD CALL LOGS <span style="color:var(--muted2);font-weight:400">(Call_Logs_*.csv — select multiple files, one per year)</span></div>
+        <input id="dial-file" type="file" accept=".csv" multiple onchange="updateUploadBtn()" style="font-family:var(--font);font-size:12px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:7px 10px;width:100%;cursor:pointer">
       </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
@@ -325,7 +325,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
         <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
           <span style="color:#f97316;font-weight:700">3</span>
           <span style="color:var(--text);font-weight:600">Dialpad</span>
-          <span>Go to <strong style="color:var(--text)">Analytics → All Calls</strong>. Set date filter to <strong style="color:var(--text)">Last 90 Days</strong>. Click Export dropdown → <strong style="color:var(--text)">Export as CSV</strong>. When prompted select <strong style="color:var(--text)">Call Logs</strong>, then <strong style="color:var(--text)">Send Report</strong>. Download from the email you receive.</span>
+          <span>Go to <strong style="color:var(--text)">Analytics → All Calls</strong>. Set date filter to <strong style="color:var(--text)">one calendar year</strong>. Click Export dropdown → <strong style="color:var(--text)">Export as CSV</strong>. When prompted select <strong style="color:var(--text)">Call Logs</strong>, then <strong style="color:var(--text)">Send Report</strong>. Download from the email you receive. Repeat for each year. You can select all files at once in the upload picker.</span>
         </div>
 
         <div style="display:grid;grid-template-columns:18px 72px 1fr;gap:0 8px;align-items:baseline">
@@ -1119,7 +1119,7 @@ function readExcel(file){ return XLSXReader.readFile(file); }
 // ═══════════════════════════════════════════════════════════════════════════
 // PROCESS UPLOAD: parse Excel → build all matrices → save to storage
 // ═══════════════════════════════════════════════════════════════════════════
-async function processUpload(sfFile, byteFile, dialFile){
+async function processUpload(sfFile, byteFile, dialFiles){
   const statusEl = document.getElementById('upload-status');
   function setStatus(msg, color='var(--muted)'){
     if(statusEl) statusEl.innerHTML = '<span style="color:'+color+'">'+msg+'</span>';
@@ -1132,9 +1132,21 @@ async function processUpload(sfFile, byteFile, dialFile){
       readExcel(sfFile),
       readExcel(byteFile),
     ]);
-    setStatus('Parsing Dialpad call log…');
-    const dialText = await dialFile.text();
-    const dialRows = parseDialpadCSV(dialText);
+    setStatus(`Parsing ${dialFiles.length} Dialpad file${dialFiles.length>1?'s':''}…`);
+    const seenCallIds = new Set();
+    const dialRows = [];
+    for(const f of dialFiles){
+      const text = await f.text();
+      const rows = parseDialpadCSV(text);
+      for(const r of rows){
+        const id = r['call_id']||r['id']||'';
+        if(id && seenCallIds.has(id)) continue;
+        if(id) seenCallIds.add(id);
+        dialRows.push(r);
+      }
+    }
+    setStatus(`Merged ${dialRows.length.toLocaleString()} call records…`);
+    await tick();
 
     setStatus('Building Byte lookup…');
     const byteMap = {};
@@ -1237,7 +1249,7 @@ function applyPayload(p){
     sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
   }
   const meta = document.querySelector('.header-meta');
-  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.1'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.9.0'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
 
   // Rebuild getOverallSeasoning weight table
   window._MDATA_WEIGHTS = MDATA;
@@ -1321,18 +1333,18 @@ function closeUploadModal(){
 function updateUploadBtn(){
   const sf   = document.getElementById('sf-file').files[0];
   const byte = document.getElementById('byte-file').files[0];
-  const dial = document.getElementById('dial-file').files[0];
+  const dial = document.getElementById('dial-file').files.length > 0;
   const btn  = document.getElementById('upload-btn');
   btn.disabled = !(sf && byte && dial);
   btn.style.opacity = (sf && byte && dial) ? '1' : '0.4';
 }
 async function doUpload(){
-  const sf   = document.getElementById('sf-file').files[0];
-  const byte = document.getElementById('byte-file').files[0];
-  const dial = document.getElementById('dial-file').files[0];
-  if(!sf || !byte || !dial) return;
+  const sf       = document.getElementById('sf-file').files[0];
+  const byte     = document.getElementById('byte-file').files[0];
+  const dialFiles = Array.from(document.getElementById('dial-file').files);
+  if(!sf || !byte || !dialFiles.length) return;
   document.getElementById('upload-btn').disabled = true;
-  await processUpload(sf, byte, dial);
+  await processUpload(sf, byte, dialFiles);
   document.getElementById('upload-btn').disabled = false;
 }
 
