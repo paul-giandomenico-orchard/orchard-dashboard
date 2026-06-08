@@ -123,7 +123,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
     <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div></div>
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.0</div></div>
     <button onclick="openSettingsModal()"
       style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
       onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
@@ -1229,7 +1229,7 @@ function applyPayload(p){
     sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
   }
   const meta = document.querySelector('.header-meta');
-  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div>'+(DATA_DATE?'<div style="color:var(--muted2);font-size:11px">Data as of '+DATA_DATE+'</div>':'');
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.8.0'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
 
   // Rebuild getOverallSeasoning weight table
   window._MDATA_WEIGHTS = MDATA;
