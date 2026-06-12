@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
     <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.5</div></div>
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.6</div></div>
     <button onclick="openSettingsModal()"
       style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
       onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
@@ -227,7 +227,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
       <div class="pr" id="yrp"></div>
       <div id="mo-group" style="display:none;margin-top:6px">
         <div class="fl" style="margin-bottom:4px">MONTH</div>
-        <div id="mop" style="display:flex;flex-wrap:wrap;gap:4px;max-width:200px"></div>
+        <div id="mop" style="display:flex;flex-wrap:wrap;gap:4px;max-width:185px"></div>
       </div>
     </div>
     <div class="fg" style="padding:0 16px;border-right:1px solid var(--border)">
@@ -1269,7 +1269,7 @@ function applyPayload(p){
     sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
   }
   const meta = document.querySelector('.header-meta');
-  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.5'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.6'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
 
   // Rebuild getOverallSeasoning weight table
   window._MDATA_WEIGHTS = MDATA;
@@ -1533,13 +1533,13 @@ function rFilters(){
   if(showMo){
     const months = S.yr==="2025" ? MONTHS_2025 : MONTHS_2026;
     const mopEl = document.getElementById("mop");
-    if(mopEl) mopEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;max-width:${months.length>6?'auto':'100%'}">` + months.map((m,idx)=>{
+    if(mopEl) mopEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;max-width:185px">` + months.map((m,idx)=>{
       const a = S.mo.includes(m);
       const c = "#a78bfa";
       const st = a ? `style="color:${c};border-color:${c}66;background:${c}12"` : "";
       const yr=m.split("-")[0], mo=parseInt(m.split("-")[1]);
       const names=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      const brk = idx===6 ? `<div style="flex-basis:100%;height:0"></div>` : '';
+      const brk = idx>0&&idx%4===0 ? `<div style="flex-basis:100%;height:0"></div>` : '';
       return `${brk}<button class="pill" ${st} onclick="tgMonth('${m}')">${names[mo-1]}</button>`;
     }).join("") + `</div>`;
   }
