@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
     <div class="header-sub">LEAD CONVERSION FUNNEL · JAN 2025 – MAY 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.1</div></div>
+    <div class="header-meta"><div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.5</div></div>
     <button onclick="openSettingsModal()"
       style="font-family:var(--font);font-size:12px;padding:7px 14px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .12s"
       onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--muted)'"
@@ -216,30 +216,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15
 </div>
 
 <div class="filters">
-  <div class="fg">
-    <div class="fl">
-      DATA SOURCE <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">SF-Led: requires a Salesforce OM Opportunity — shows the full Lead→Funded funnel with contact rates.<br><br>Byte-Led: every Byte file regardless of SF link — App Complete→Funded only, higher coverage.</span></span>
+  <div style="display:grid;grid-template-columns:auto auto auto 1fr auto;grid-template-rows:auto auto;gap:0;align-items:start;width:100%">
+    <!-- Row 1 -->
+    <div class="fg" style="padding-right:16px;border-right:1px solid var(--border)">
+      <div class="fl">DATA SOURCE <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">SF-Led: requires a Salesforce OM Opportunity — shows the full Lead→Funded funnel with contact rates.<br><br>Byte-Led: every Byte file regardless of SF link — App Complete→Funded only, higher coverage.</span></span></div>
+      <div class="pr" id="srcp"></div>
     </div>
-    <div class="pr" id="srcp"></div>
-  </div>
-  <div class="divider"></div>
-  <div class="fg">
-    <div class="fl">
-      COHORT YEAR <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">Filters by the year the lead was created in Salesforce. All four Key Metrics cards respond to this filter.</span></span>
+    <div class="fg" style="padding:0 16px;border-right:1px solid var(--border)">
+      <div class="fl">COHORT YEAR <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">Filters by the year the lead was created in Salesforce. All four Key Metrics cards respond to this filter.</span></span></div>
+      <div class="pr" id="yrp"></div>
+      <div id="mo-group" style="display:none;margin-top:6px">
+        <div class="fl" style="margin-bottom:4px">MONTH</div>
+        <div id="mop" style="display:flex;flex-wrap:wrap;gap:4px;max-width:200px"></div>
+      </div>
     </div>
-    <div class="pr" id="yrp"></div>
+    <div class="fg" style="padding:0 16px;border-right:1px solid var(--border)">
+      <div class="fl">LOAN OFFICER</div>
+      <div class="pr" id="lop"></div>
+    </div>
+    <div class="fg" id="src-filter" style="padding:0 16px;border-right:1px solid var(--border)">
+      <div class="fl">LEAD TYPE</div>
+      <div class="pr" id="bktp"></div>
+    </div>
+    <div class="fg" id="cw-group" style="padding-left:16px">
+      <div class="fl">CONTACT WINDOW <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">A lead is considered contacted if an outbound call attempt or inbound answered call was logged in Dialpad within this window.<br><br>Voicemail attempts count. Does not capture SMS, email, or outreach outside Dialpad.</span></span></div>
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:3px">Dialpad outbound attempt or connect within</div>
+      <div class="pr" id="cwp"></div>
+    </div>
   </div>
-  <div class="divider" id="mo-divider" style="display:none"></div>
-  <div class="fg" id="mo-group" style="display:none">
-    <div class="fl">MONTH</div>
-    <div class="pr" id="mop"></div>
-  </div>
-  <div class="divider"></div>
-  <div class="fg"><div class="fl">LOAN OFFICER</div><div class="pr" id="lop"></div></div>
-  <div class="divider" id="src-divider"></div>
-  <div class="fg" id="src-filter" style="flex:1"><div class="fl">LEAD TYPE</div><div class="pr" id="bktp"></div></div>
-  <div class="divider"></div>
-  <div class="fg" id="cw-group"><div class="fl">CONTACT WINDOW <span class="tip-wrap"><span class="tip-icon">(?)</span><span class="tip-box">A lead is considered contacted if an outbound call attempt or inbound answered call was logged in Dialpad within this window.<br><br>Voicemail attempts count. Does not capture SMS, email, or outreach outside Dialpad.</span></span></div><div style="font-size:11px;color:var(--muted2);margin-bottom:3px">Dialpad outbound attempt or connect within</div><div class="pr" id="cwp"></div></div>
 </div>
 <div class="tabs">
   <button class="tab active" data-tab="funnel">FUNNEL</button>
@@ -454,7 +458,7 @@ let DATA_DATE=""; // date string of last upload
 let TODAY_MS=Date.now();
 let DATA_LOADED=false;
 
-let S={lo:"Active LOs",bkt:"All",cw:30,sel:[],tab:"funnel",tm:0,yr:"2026",src:"sf",dtv:"current",mo:[]};
+let S={lo:"Active LOs",bkt:"All",cw:"all",sel:[],tab:"funnel",tm:0,yr:"2026",src:"sf",dtv:"current",mo:[]};
 
 // Default targets (overridden by settings storage)
 const DEFAULT_TARGETS={
@@ -1265,7 +1269,7 @@ function applyPayload(p){
     sub.textContent = 'LEAD CONVERSION FUNNEL · JAN 2025 – '+lastLabel.toUpperCase();
   }
   const meta = document.querySelector('.header-meta');
-  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.1'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
+  if(meta) meta.innerHTML = '<div>Salesforce CRM + Byte LOS</div><div style="color:var(--muted2);font-size:11px">v1.10.5'+(DATA_DATE?' · Data as of '+DATA_DATE:'')+'</div>';
 
   // Rebuild getOverallSeasoning weight table
   window._MDATA_WEIGHTS = MDATA;
@@ -1524,21 +1528,20 @@ function rFilters(){
   }).join("");
   // Month filter — only visible when a single year is selected
   const moGroup = document.getElementById("mo-group");
-  const moDivider = document.getElementById("mo-divider");
   const showMo = S.yr !== "All";
   if(moGroup) moGroup.style.display = showMo ? "" : "none";
-  if(moDivider) moDivider.style.display = showMo ? "" : "none";
   if(showMo){
     const months = S.yr==="2025" ? MONTHS_2025 : MONTHS_2026;
     const mopEl = document.getElementById("mop");
-    if(mopEl) mopEl.innerHTML = months.map(m=>{
+    if(mopEl) mopEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:4px;max-width:${months.length>6?'auto':'100%'}">` + months.map((m,idx)=>{
       const a = S.mo.includes(m);
       const c = "#a78bfa";
       const st = a ? `style="color:${c};border-color:${c}66;background:${c}12"` : "";
       const yr=m.split("-")[0], mo=parseInt(m.split("-")[1]);
       const names=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      return `<button class="pill" ${st} onclick="tgMonth('${m}')">${names[mo-1]}</button>`;
-    }).join("");
+      const brk = idx===6 ? `<div style="flex-basis:100%;height:0"></div>` : '';
+      return `${brk}<button class="pill" ${st} onclick="tgMonth('${m}')">${names[mo-1]}</button>`;
+    }).join("") + `</div>`;
   }
   renderSeasoningBanner();
 }
@@ -1548,7 +1551,6 @@ function rTabs(){
   ["funnel","trend","buckets"].forEach(t=>document.getElementById("tab-"+t).style.display=S.tab===t?"":"none");
   const showSrc=S.tab==="funnel"&&S.src==="sf";
   document.getElementById("src-filter").style.display=showSrc?"":"none";
-  document.getElementById("src-divider").style.display=showSrc?"":"none";
   const cwGroup=document.getElementById("cw-group");
   if(cwGroup)cwGroup.style.display=S.src==="byte"?"none":"";
 }
